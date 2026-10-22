@@ -34,7 +34,9 @@ def main() -> None:
     a = p.parse_args()
     sel = json.loads(Path(a.results).read_text())["selective"][a.policy]
     auto, err = sel["automation_rate"], sel["error_rate_on_automated"] or 0.0
-    print(f"MEASURED on synthetic test split ({a.policy}): automation_rate={auto:.3f}, error_rate_on_automated={err:.3f}")
+    print(
+        f"MEASURED on synthetic test split ({a.policy}): automation_rate={auto:.3f}, error_rate_on_automated={err:.3f}"
+    )
     print(f"ASSUMED: calls={a.calls}/month, ACW={a.acw} min, review={a.review} min, rework={a.rework} min\n")
     print("ACW saved per automated call (s) | net hours saved / month at measured (a, e) | at a-0.2, e*2 (pessimistic)")
     for s in (0.5, 1.0, 2.0, a.acw):
