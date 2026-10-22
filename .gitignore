@@ -1,0 +1,14 @@
+.venv/
+.venv-airflow/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+models
+data/audio/
+storage/
+batch/
+mlflow.db
+mlruns/
+cci.db
+*.egg-info/

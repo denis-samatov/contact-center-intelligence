@@ -1,0 +1,36 @@
+# Local stack: PostgreSQL (pgvector image), API, worker, llama.cpp servers (chat + embeddings).
+# Models are mounted read-only from ./models (scripts/fetch_models.sh) and ./models/llm (GGUF).
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment: {POSTGRES_USER: cci, POSTGRES_PASSWORD: cci, POSTGRES_DB: cci}
+    healthcheck: {test: ["CMD-SHELL", "pg_isready -U cci"], interval: 5s, retries: 10}
+    volumes: [pgdata:/var/lib/postgresql/data]
+  llm:
+    build: {context: ., dockerfile: docker/llama.Dockerfile}
+    command: ["-m", "/models/llm/qwen3-1.7b-q4_k_m.gguf", "--host", "0.0.0.0", "--port", "8081", "-c", "8192", "--jinja", "--reasoning", "off"]
+    volumes: [./models:/models:ro]
+  embed:
+    build: {context: ., dockerfile: docker/llama.Dockerfile}
+    command: ["-m", "/models/llm/qwen3-embedding-0.6b-q8_0.gguf", "--host", "0.0.0.0", "--port", "8082", "--embedding", "--pooling", "last", "-ub", "8192"]
+    volumes: [./models:/models:ro]
+  api:
+    build: .
+    environment: &env
+      CCI_DATABASE_URL: postgresql+psycopg://cci:cci@db:5432/cci
+      CCI_API_KEY: ${CCI_API_KEY:?set CCI_API_KEY}
+      CCI_LLM_BASE_URL: http://llm:8081/v1
+      CCI_EMBED_BASE_URL: http://embed:8082/v1
+      CCI_INTENT_MODEL_URI: /models/intent/intent.joblib
+    ports: ["127.0.0.1:8090:8090"]
+    volumes: [./models:/models:ro, storage:/data/storage]
+    depends_on: {db: {condition: service_healthy}}
+    read_only: true
+    tmpfs: [/tmp]
+  worker:
+    build: .
+    command: ["cci", "worker"]
+    environment: *env
+    volumes: [./models:/models:ro, storage:/data/storage:ro]
+    depends_on: {db: {condition: service_healthy}}
+volumes: {pgdata: {}, storage: {}}

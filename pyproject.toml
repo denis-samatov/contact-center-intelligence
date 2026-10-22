@@ -1,0 +1,61 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "contact-center-intelligence"
+version = "0.1.0"
+description = "Insurance contact-center call intelligence: Russian ASR, diarization, case extraction, grounded answers, selective automation with human review"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Denis Samatov" }]
+dependencies = [
+  "numpy>=1.26",
+  "scipy>=1.13",
+  "soundfile>=0.12",
+  "sherpa-onnx>=1.12",
+  "pydantic>=2.7",
+  "pydantic-settings>=2.4",
+  "httpx>=0.27",
+  "scikit-learn>=1.5",
+  "joblib>=1.4",
+  "pymorphy3>=2.0",
+  "pymorphy3-dicts-ru>=2.4",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "python-multipart>=0.0.9",
+  "sqlalchemy>=2.0",
+  "psycopg[binary]>=3.2",
+  "pgvector>=0.3",
+  "mlflow>=3.0",
+  "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+cci = "cci.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cci"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "models: needs downloaded ONNX speech models (scripts/fetch_models.sh)",
+  "llm: needs a running llama-server (LLM / embeddings)",
+  "postgres: needs a PostgreSQL server (CCI_TEST_DATABASE_URL)",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.File", "fastapi.Form", "fastapi.Query"]

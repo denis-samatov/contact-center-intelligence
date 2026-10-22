@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact Center Intelligence</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1d2330; --muted:#667085; --line:#e4e7ec; --accent:#2f6fde; --warn:#b54708; --bad:#b42318; --ok:#067647; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:12px 20px; background:var(--card); border-bottom:1px solid var(--line); display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  header h1 { font-size:16px; margin:0; }
+  main { display:grid; grid-template-columns: 340px 1fr; gap:16px; padding:16px 20px; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-bottom:14px; }
+  .card h2 { font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:0 0 8px; }
+  input, select, textarea, button { font:inherit; }
+  input[type=text], input[type=password], select, textarea { width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:6px; padding:6px 12px; cursor:pointer; }
+  button.secondary { background:#eef2f6; color:var(--ink); }
+  .calls div { padding:6px 4px; border-bottom:1px solid var(--line); cursor:pointer; display:flex; justify-content:space-between; gap:8px; }
+  .calls div:hover { background:#f2f5fb; }
+  .pill { font-size:11px; padding:1px 7px; border-radius:10px; background:#eef2f6; white-space:nowrap; }
+  .pill.review { background:#fef0c7; color:var(--warn); } .pill.auto, .pill.approved { background:#dcfae6; color:var(--ok); }
+  .pill.failed, .pill.rejected { background:#fee4e2; color:var(--bad); }
+  .seg { display:grid; grid-template-columns: 90px 80px 1fr; gap:8px; padding:3px 0; border-bottom:1px dashed var(--line); }
+  .seg .t { color:var(--muted); font-variant-numeric: tabular-nums; } .seg .operator { color:var(--accent); } .seg .client { color:#7a2e0e; }
+  table { border-collapse:collapse; width:100%; } td, th { text-align:left; padding:4px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .missing { color:var(--bad); font-weight:600; } .contra { background:#fffaeb; }
+  pre { white-space:pre-wrap; background:#f8fafc; border:1px solid var(--line); border-radius:6px; padding:8px; margin:0; }
+  .row { display:flex; gap:8px; align-items:center; margin:6px 0; flex-wrap:wrap; }
+  .muted { color:var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Contact Center Intelligence</h1>
+  <span class="muted">Демо на синтетических данных. Вымышленная страховая «Демо-Страхование».</span>
+  <span style="flex:1"></span>
+  <input id="key" type="password" placeholder="API key" style="width:200px">
+  <button class="secondary" onclick="refresh()">Обновить</button>
+</header>
+<main>
+  <section>
+    <div class="card">
+      <h2>Загрузка звонка</h2>
+      <input id="file" type="file" accept=".wav,.flac,.ogg">
+      <div class="row"><label>Происхождение</label>
+        <select id="prov"><option value="synthetic">synthetic (синтетика)</option><option value="licensed">licensed</option><option value="consented_recording">consented_recording (есть согласие)</option></select></div>
+      <input id="lic" type="text" placeholder="Лицензия / основание использования">
+      <div class="row"><input id="cdate" type="text" placeholder="Дата звонка ГГГГ-ММ-ДД" style="width:170px"><button onclick="upload()">Загрузить</button></div>
+      <div id="upmsg" class="muted"></div>
+    </div>
+    <div class="card"><h2>Звонки</h2><div id="calls" class="calls"></div></div>
+    <div class="card"><h2>Аналитика</h2><pre id="analytics" class="muted">-</pre></div>
+  </section>
+  <section>
+    <div class="card" id="detail"><h2>Карточка обращения</h2><p class="muted">Выберите звонок слева.</p></div>
+    <div class="card">
+      <h2>Вопрос по правилам (RAG с источниками)</h2>
+      <div class="row"><input id="q" type="text" placeholder="Например: какая франшиза по КАСКО?"><button onclick="ask()">Спросить</button></div>
+      <pre id="answer" class="muted">-</pre>
+    </div>
+  </section>
+</main>
+<script>
+const H = () => ({ 'X-API-Key': document.getElementById('key').value });
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function api(path, opts={}) {
+  const r = await fetch(path, { ...opts, headers: { ...H(), ...(opts.headers||{}) } });
+  if (!r.ok) throw new Error(r.status + ' ' + await r.text());
+  return r.json();
+}
+async function upload() {
+  const f = document.getElementById('file').files[0]; if (!f) return;
+  const fd = new FormData(); fd.append('file', f); fd.append('provenance', prov.value); fd.append('license_note', lic.value);
+  if (cdate.value) fd.append('call_date', cdate.value);
+  try { const r = await api('/v1/calls', { method:'POST', body: fd }); upmsg.textContent = 'Поставлен в очередь: ' + r.call_id; refresh(); }
+  catch (e) { upmsg.textContent = e.message; }
+}
+async function refresh() {
+  try {
+    const rows = await api('/v1/calls');
+    calls.innerHTML = rows.map(r => `<div onclick="show('${r.call_id}')"><span>${esc(r.filename)}<br><span class="muted">${esc(r.intent||'')}</span></span>
+      <span class="pill ${esc(r.decision||r.status)}">${esc(r.decision||r.status)}</span></div>`).join('') || '<span class="muted">пусто</span>';
+    analytics.textContent = JSON.stringify(await api('/v1/analytics'), null, 1);
+  } catch (e) { calls.innerHTML = '<span class="muted">' + esc(e.message) + '</span>'; }
+}
+let current = null;
+async function show(id) {
+  const d = await api('/v1/calls/' + id); current = d;
+  const c = d.case;
+  const segs = d.segments.map(s => `<div class="seg"><span class="t">${s.start.toFixed(1)}–${s.end.toFixed(1)} с</span><span class="${s.role}">${s.role}</span><span>${esc(s.text_normalized)}</span></div>`).join('');
+  let caseHtml = '<p class="muted">Обработка: ' + esc(d.status) + (d.error ? ' — ' + esc(d.error) : '') + '</p>';
+  if (c) {
+    const contra = new Set(c.contradictions.map(x => x.field));
+    const keys = [...new Set([...Object.keys(c.fields), ...c.missing])];
+    caseHtml = `<div class="row"><b>${esc(c.intent)}</b><span class="pill">p=${c.intent_prob}</span><span class="pill ${esc(c.decision)}">${esc(c.decision)}</span>
+      <span class="pill">очередь: ${esc(c.queue)}</span><span class="muted">v${c.version} · ${esc(JSON.stringify(c.model_versions))}</span></div>
+      ${c.review_reasons.length ? '<p>Причины проверки: ' + c.review_reasons.map(esc).join(', ') + '</p>' : ''}
+      <table><tr><th>Поле</th><th>Значение (можно исправить)</th></tr>
+      ${keys.map(k => `<tr class="${contra.has(k)?'contra':''}"><td>${esc(k)}</td><td><input type="text" data-f="${esc(k)}" value="${esc(c.fields[k]||'')}" placeholder="НЕ УКАЗАНО" class="${c.missing.includes(k)?'missing':''}"></td></tr>`).join('')}</table>
+      ${c.contradictions.length ? '<p class="missing">Противоречия: ' + c.contradictions.map(x => esc(x.field + ': ' + x.values.join(' / '))).join('; ') + '</p>' : ''}
+      <div class="row"><input id="reviewer" type="text" placeholder="Оператор" style="width:160px"><button onclick="save('approved')">Подтвердить</button><button class="secondary" onclick="save('review')">Сохранить правки</button><button class="secondary" onclick="save('rejected')">Отклонить</button></div>
+      <h2>Протокол</h2><pre>${esc(c.protocol)}</pre><h2 style="margin-top:10px">Черновик ответа клиенту</h2><pre>${esc(c.reply_draft)}</pre>
+      <p class="muted">Источники: ${c.reply_sources.map(esc).join(', ')}</p>`;
+  }
+  detail.innerHTML = `<h2>Карточка обращения · ${esc(d.filename)}</h2>${caseHtml}<h2 style="margin-top:12px">Транскрипт (${esc(d.asr_backend||'')}, ${(d.duration_s||0).toFixed(1)} с)</h2>${segs}`;
+}
+async function save(decision) {
+  const fields = {}; document.querySelectorAll('[data-f]').forEach(i => { if (i.value) fields[i.dataset.f] = i.value; });
+  try {
+    await api(`/v1/calls/${current.call_id}/case`, { method:'PATCH', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ reviewer: reviewer.value || 'operator', fields, decision, expected_version: current.case.version }) });
+    show(current.call_id); refresh();
+  } catch (e) { alert(e.message); }
+}
+async function ask() {
+  answer.textContent = '...';
+  try { const r = await api('/v1/kb/answer', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ question: q.value }) });
+        answer.textContent = r.answer + '\n\nИсточники: ' + (r.citations||[]).join(', ') + '\nПроверка: ' + (r.grounded ? 'ответ подтвержден источниками' : 'НЕ подтвержден — нужна проверка'); }
+  catch (e) { answer.textContent = e.message; }
+}
+</script>
+</body>
+</html>

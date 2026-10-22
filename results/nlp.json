@@ -1,0 +1,236 @@
+{
+ "suite": "nlp",
+ "manifest": {
+  "created_utc": "2026-10-22T12:05:43+00:00",
+  "python": "3.12.3",
+  "platform": "Linux-6.18.44-fc-v140-x86_64-with-glibc2.39",
+  "packages": {
+   "sherpa-onnx": "1.13.8",
+   "scikit-learn": "1.9.1",
+   "numpy": "2.5.4",
+   "pymorphy3": "2.0.6",
+   "mlflow": "3.17.2",
+   "fastapi": "0.159.1",
+   "sqlalchemy": "2.1.6",
+   "httpx": "0.28.1"
+  },
+  "git_commit": null,
+  "command": [
+   "/home/user/portfolio/contact-center-intelligence/.venv/bin/cci",
+   "eval-nlp",
+   "--no-llm"
+  ]
+ },
+ "test_calls": 150,
+ "conditions": [
+  "reference"
+ ],
+ "intent": {
+  "tfidf_lr/reference": {
+   "accuracy": 1.0,
+   "accuracy_ci95": [
+    1.0,
+    1.0
+   ],
+   "macro_f1": 1.0,
+   "macro_f1_ci95": [
+    1.0,
+    1.0
+   ],
+   "n": 150,
+   "seconds_per_call": 0.004336448320003304
+  },
+  "tfidf_lr/reference:opening": {
+   "accuracy": 0.5466666666666666,
+   "accuracy_ci95": [
+    0.4666666666666667,
+    0.6266666666666667
+   ],
+   "macro_f1": 0.519967346404128,
+   "macro_f1_ci95": [
+    0.437586541353163,
+    0.5824579341495532
+   ],
+   "n": 150,
+   "seconds_per_call": 0.003831143813331437
+  }
+ },
+ "extraction": {
+  "rules/reference": {
+   "fields": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "per_field_recall": {
+     "address": 1.0,
+     "amount": 1.0,
+     "cancellation_reason": 1.0,
+     "change_type": 1.0,
+     "claim_number": 1.0,
+     "complaint_subject": 1.0,
+     "damage_type": 1.0,
+     "document_type": 1.0,
+     "incident_date": 1.0,
+     "incident_place": 1.0,
+     "injuries": 1.0,
+     "new_value": 1.0,
+     "other_party": 1.0,
+     "policy_number": 1.0,
+     "product": 1.0,
+     "question_topic": 1.0
+    },
+    "pairs": 411
+   },
+   "contradictions": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "support": 7
+   },
+   "preferences": {
+    "precision": 0.8333333333333334,
+    "recall": 0.8333333333333334,
+    "f1": 0.8333333333333334,
+    "support": 60
+   },
+   "seconds_per_call": 0.0001250062535109464
+  }
+ },
+ "selective": {
+  "condition": "reference",
+  "target_error_on_dev": 0.02,
+  "chosen_threshold": 0.0,
+  "dev_curve": [
+   {
+    "threshold": 0.0,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.05,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.1,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.15,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.2,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.25,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.3,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.35,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.4,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.45,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.5,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.55,
+    "dev_automation": 0.78,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.6,
+    "dev_automation": 0.7733333333333333,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.65,
+    "dev_automation": 0.7733333333333333,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.7,
+    "dev_automation": 0.7733333333333333,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.75,
+    "dev_automation": 0.76,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.8,
+    "dev_automation": 0.7133333333333334,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.85,
+    "dev_automation": 0.68,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.9,
+    "dev_automation": 0.6133333333333333,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 0.95,
+    "dev_automation": 0.32666666666666666,
+    "dev_error": 0.0
+   },
+   {
+    "threshold": 1.0,
+    "dev_automation": 0.0,
+    "dev_error": 0.0
+   }
+  ],
+  "test_automate_all": {
+   "automation_rate": 1.0,
+   "error_rate_on_automated": 0.0,
+   "errors_automated": 0,
+   "automated": 150,
+   "n": 150,
+   "overall_case_error_if_all_automated": 0.0
+  },
+  "test_rules_only": {
+   "automation_rate": 0.8466666666666667,
+   "error_rate_on_automated": 0.0,
+   "errors_automated": 0,
+   "automated": 127,
+   "n": 150,
+   "overall_case_error_if_all_automated": 0.0
+  },
+  "test_selective": {
+   "automation_rate": 0.8466666666666667,
+   "error_rate_on_automated": 0.0,
+   "errors_automated": 0,
+   "automated": 127,
+   "n": 150,
+   "overall_case_error_if_all_automated": 0.0
+  }
+ },
+ "llm_usage": null
+}
