@@ -1,6 +1,7 @@
 """Sensitivity grid for the business-case model in docs/BUSINESS_CASE.md.
 
-Measured inputs (automation rate, error rate on automated) are read from results/nlp.json;
+Measured inputs (automation rate, error rate on automated) are read from a results file
+(default: rules v1.1, policy "review on missing/contradiction", ASR condition);
 everything else is an explicit assumption passed on the command line.
 """
 
@@ -23,11 +24,17 @@ def main() -> None:
     p.add_argument(
         "--rework", type=float, default=10.0, help="ASSUMPTION: minutes of rework per wrong automated case (r)"
     )
-    p.add_argument("--results", default="results/nlp.json")
+    p.add_argument("--results", default="results/rules_v1_1.json")
+    p.add_argument(
+        "--policy",
+        default="test_rules_only",
+        choices=["test_automate_all", "test_rules_only", "test_selective"],
+        help="test_selective automates nothing on this corpus (no threshold met the dev target)",
+    )
     a = p.parse_args()
-    sel = json.loads(Path(a.results).read_text())["selective"]["test_selective"]
+    sel = json.loads(Path(a.results).read_text())["selective"][a.policy]
     auto, err = sel["automation_rate"], sel["error_rate_on_automated"] or 0.0
-    print(f"MEASURED on synthetic test split: automation_rate={auto:.3f}, error_rate_on_automated={err:.3f}")
+    print(f"MEASURED on synthetic test split ({a.policy}): automation_rate={auto:.3f}, error_rate_on_automated={err:.3f}")
     print(f"ASSUMED: calls={a.calls}/month, ACW={a.acw} min, review={a.review} min, rework={a.rework} min\n")
     print("ACW saved per automated call (s) | net hours saved / month at measured (a, e) | at a-0.2, e*2 (pessimistic)")
     for s in (0.5, 1.0, 2.0, a.acw):

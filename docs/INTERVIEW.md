@@ -18,9 +18,19 @@ accurate under ASR noise and paraphrase, it does not justify its latency on CPU.
 path stays available and evaluated (ADR-B5).
 
 **Q: How does selective automation work?**
-A case goes to a human if intent probability is below a threshold chosen on dev, if a
-required field is missing, or if the customer contradicted themselves. The report shows
-automation rate and error rate *on automated cases* for automate-all vs selective policies.
+A case goes to a human if a required field is missing, if the customer contradicted
+themselves, or if intent probability is below a threshold chosen on dev. Measured on ASR text:
+automate-all is wrong on 38% of cases; review-on-missing/contradiction automates 55% with 8.4%
+errors. No intent threshold reached 2% on dev, because the remaining errors are in fields, not
+intent - so the threshold sends everything to review. That is the finding: the next signal
+has to be per-field confidence, not a better intent model.
+
+**Q: What went wrong during the evaluation?**
+The frozen rules scored contradiction F1 = 0 on ASR: the operator cue "что-нибудь еще" was
+matched literally and ASR drops the hyphen. I reproduced it on dev, fixed it there (v1.1) and
+report the test numbers as post-hoc next to the frozen ones. The first paraphrase run kept 7%
+of turns; with inlined few-shot examples the 1.7B model copied the example, and one copy passed
+the fact checks - so a copy check and an embedding gate were added (debugged on dev).
 
 **Q: How do you prevent hallucinated answers?**
 Answers are generated from retrieved rule chunks with citations, then verified: cited ids
