@@ -64,7 +64,7 @@ the generator's dialogue grammar, so `rules/reference` is an upper bound by cons
 
 ## 4. Automation vs selective prediction with human review
 
-Condition `asr`. A case is wrong if intent, queue or any required field is wrong. **No threshold reached <= 2% case error on dev** (lowest dev error 0.078), so the selective policy sends every case to review. Intent confidence cannot catch these errors: they come from fields (ASR number and name errors), not from intent.
+Condition `asr`. A case is wrong if intent, queue or any required field is wrong. **No threshold reached <= 2% case error on dev** (lowest dev error 0.078), so the selective policy sends every case to review. Intent confidence cannot catch these errors: they come from fields, not from intent (intent accuracy on full ASR transcripts is 1.0).
 
 | policy | automation rate | error rate on automated | errors | calls |
 |---|---|---|---|---|
@@ -75,6 +75,27 @@ Condition `asr`. A case is wrong if intent, queue or any required field is wrong
 LLM usage during NLP evaluation (local Qwen3-1.7B Q4_K_M, CPU): 362 calls, 159702 prompt + 41127 completion tokens, 3410 s, 0 failures, 2 schema repairs. Monetary cost: none measured (local CPU).
 
 Paraphrase set: 205 of 284 client turns rewritten (acceptance 0.72); rejections: {'unchanged': 50, 'entity_or_cue_lost': 10, 'numbers_changed': 18, 'low_similarity': 1}.
+
+## 4b. Post-hoc: rules v1.1 (after the frozen test run)
+
+The frozen run above found contradiction P/R = 0 on ASR text. Cause: the operator cue was matched as the literal string "что-нибудь еще", and GigaAM writes "что нибудь еще". The same failure reproduces on dev; v1.1 (hyphen normalization, inflection-tolerant question cues) was developed on dev ASR transcripts only. Test rows below are therefore **post-hoc** and should be read as such; contradictions occur in only 12 dev and 7 test calls, so their F1 is coarse.
+
+| split | condition | field F1 v1.0 | field F1 v1.1 | field R v1.1 | contradiction F1 v1.0 | contradiction F1 v1.1 | preferences F1 v1.1 |
+|---|---|---|---|---|---|---|---|
+| dev | reference | - | 1.000 | 1.000 | - | 1.000 | 0.768 |
+| dev | asr | - | 0.871 | 0.802 | - | 0.909 | 0.708 |
+| test | reference | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.833 |
+| test | asr | 0.866 | 0.880 | 0.818 | 0.000 | 1.000 | 0.803 |
+
+Automation with rules v1.1 (`asr`):
+
+| policy | automation rate | error rate on automated | errors | calls |
+|---|---|---|---|---|
+| automate everything | 1.000 | 0.380 | 57 | 150 |
+| review on missing/contradiction | 0.553 | 0.084 | 7 | 150 |
+| + confidence threshold (selective) | 0.000 | - | 0 | 150 |
+
+Remaining field errors on dev ASR are mostly ASR errors on short product names ("ОСАГО" -> "осада"/"осага", "КАСКО" -> "кашка"), city names, and turns split by diarization. They are not patched in the rules; the planned fix is ASR contextual biasing (hotwords).
 
 ## 5. Knowledge-base answers: no retrieval vs grounded
 

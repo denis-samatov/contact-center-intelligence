@@ -54,3 +54,18 @@ def test_rules_report_unanswered_fields():
 def test_dates_after_call_date_roll_back_a_year():
     turns = [("operator", "Какого числа это случилось?"), ("client", "Тридцать первого декабря.")]
     assert extract(turns, dt.date(2026, 10, 5)).fields["incident_date"] == "2025-12-31"
+
+
+def test_rules_read_asr_style_text_without_hyphens_or_punctuation():
+    # ASR output: lower case, no punctuation, "что нибудь" instead of "что-нибудь" (rules v1.1).
+    turns = [
+        ("operator", "продиктуйте номер полиса пожалуйста"),
+        ("client", "да сейчас номер четыре ноль ноль один пять восемь три четыре"),
+        ("operator", "кто нибудь пострадал"),
+        ("client", "нет все целы"),
+        ("operator", "что нибудь еще хотите добавить"),
+        ("client", "повторю номер полиса четыре шесть шесть девять два шесть один шесть"),
+    ]
+    ex = extract(turns)
+    assert ex.fields["injuries"] == "no"
+    assert [(c.field, c.values) for c in ex.contradictions] == [("policy_number", ["40015834", "46692616"])]

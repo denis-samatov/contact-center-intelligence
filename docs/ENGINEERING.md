@@ -37,3 +37,5 @@ limits section updated if a new limitation was discovered.
 | 4 | TTS reply read-back for IVR (license-checked voice) | M | - |
 | 5 | Calibrate intent probabilities on dev (temperature scaling) and re-pick threshold | S | - |
 | 6 | Kubernetes Deployment/Job manifests validated on kind; HPA on queue depth | M | cluster |
+| 7 | ASR contextual biasing (hotwords) for product names ("ОСАГО", "КАСКО"); re-measure field recall on dev | S | - |
+| 8 | Per-field confidence (ASR token scores + parser agreement) so selective automation can target field errors | M | 7 |

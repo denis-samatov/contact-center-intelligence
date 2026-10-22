@@ -38,10 +38,59 @@ Full report with CIs: [results/REPORT.md](results/REPORT.md). Protocol: [docs/EV
 | real-time factor (telephony, 4 CPU threads) | 0.14 | 0.11 | 0.40 |
 
 GigaAM-v2 (Russian-specific) is the default: best WER in every condition and robust to the
-telephone channel and noise. Diarization on telephony audio: DER 0.108; see the report for
-role-assignment accuracy and the fix developed on dev.
+telephone channel and noise. Diarization on telephony audio: DER 0.108. Operator/client roles
+from a script-cue heuristic were 0.896 accurate (26/150 test calls < 0.9); a text role model
+selected on dev raises this to 0.9985 with no call below 0.9 ([ADR-B8](docs/adr/ADR-B8-role-assignment.md)).
 
-<!-- NLP_RESULTS -->
+**Early routing: intent from the client's first utterance** (test, 150 calls; `[60]` = first 60, where the LLM ran)
+
+| model | reference | ASR (telephony) | LLM paraphrase [60] |
+|---|---:|---:|---:|
+| TF-IDF + logistic regression | 0.547 (0.467-0.627) | 0.580 | 0.450 |
+| Qwen3-Embedding-0.6B + logistic regression | **0.807** (0.740-0.867) | **0.800** | **0.717** |
+| Qwen3-1.7B zero-shot [60] | 0.467 | 0.433 | 0.533 |
+
+Accuracy with 95% bootstrap CI; macro-F1 in the report. Test openings use a phrasing family
+never seen in training. Intent from the *full* transcript is 1.0 for every model and is not
+informative here (operator questions are intent-specific by construction).
+
+**Case extraction** (micro P/R over the gold intent's fields)
+
+| extractor | reference | ASR | paraphrase [60] | contradictions (ASR) |
+|---|---:|---:|---:|---:|
+| rules v1.0 (frozen) | 1.000 (upper bound) | P 0.951 / R 0.796 | P 0.986 / R 0.936 | F1 0.00 |
+| rules v1.1 (post-hoc, dev-developed) | 1.000 | P 0.952 / R 0.818 | P 0.986 / R 0.936 | F1 1.00 (7 calls) |
+| Qwen3-1.7B, JSON schema [60] | P 0.555 / R 0.487 | P 0.456 / R 0.397 | P 0.571 / R 0.462 | F1 0.04 |
+
+The frozen rules missed every contradiction on ASR text because an operator cue was matched as
+the literal "что-нибудь еще" while ASR writes "что нибудь еще"; the fix was developed on dev
+transcripts and its test numbers are labelled post-hoc. The local 1.7B model is far behind the
+rules: it leaves preference fields empty and invents values (checked on dev calls), at 17 s per call.
+
+**Automate or review** (ASR condition, rules v1.1, 150 test calls)
+
+| policy | automated | error rate on automated cases |
+|---|---:|---:|
+| automate everything | 100% | 38.0% |
+| review when a required field is missing or contradicted | 55.3% | **8.4%** (7 cases) |
+| + intent-confidence threshold | 0% | - |
+
+No intent-confidence threshold reached the 2% target on dev, so the selective policy routes
+everything to review: errors come from fields (ASR on product names such as "ОСАГО" ->
+"осада"), not from intent. The honest conclusion is that this pipeline can pre-fill cards for
+operators but should not close cases automatically on this ASR quality.
+
+**Knowledge-base answers** (40 questions, fictional rulebook, same Qwen3-1.7B)
+
+| | closed book | grounded (hybrid BM25 + dense, top 3) |
+|---|---:|---:|
+| fully correct answers | 5% | **80%** |
+| fact recall | 9.6% | 81.2% |
+| numbers verified against cited chunk | - | 85% of answers |
+| citation precision | - | 90% |
+
+Retrieval recall@3: BM25 0.975, dense 1.0, hybrid 1.0. The closed-book row is low by design:
+the rulebook is fictional, so it measures how often the model answers without knowing.
 
 ## What the product does (and where)
 
@@ -70,7 +119,8 @@ TTS voices were selected by dataset license ([ADR-B3](docs/adr/ADR-B3-tts-voice-
 * Synthetic TTS speech: no overlaps, accents or spontaneous disfluency. WER here validates the
   pipeline and ranks the models under identical conditions; it is not production accuracy.
 * Rules were written against the generator's grammar; their reference-text scores are an upper
-  bound. Robustness is measured on ASR and LLM-paraphrase conditions.
+  bound. Robustness is measured on ASR and LLM-paraphrase conditions. Paraphrases keep facts
+  (checked) but 28% of client turns could not be rewritten safely and stay original.
 * Qwen3-ASR could not be evaluated (weights only on Hugging Face, blocked in the build
   environment). One local 1.7B LLM; larger models not evaluated.
 

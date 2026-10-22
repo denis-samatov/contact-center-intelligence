@@ -213,6 +213,70 @@ def build_report(results: Path) -> Path:
             f"(acceptance {para['acceptance_rate']:.2f}); rejections: {para['rejection_reasons']}.",
             "",
         ]
+    post = load("rules_v1_1")
+    if post and nlp:
+        md += [
+            "## 4b. Post-hoc: rules v1.1 (after the frozen test run)",
+            "",
+            "The frozen run above found contradiction P/R = 0 on ASR text. Cause: the operator cue was matched "
+            'as the literal string "что-нибудь еще", and GigaAM writes "что нибудь еще". The same failure '
+            "reproduces on dev; v1.1 (hyphen normalization, inflection-tolerant question cues) was developed on "
+            "dev ASR transcripts only. Test rows below are therefore **post-hoc** and should be read as such; "
+            "contradictions occur in only 12 dev and 7 test calls, so their F1 is coarse.",
+            "",
+        ]
+        rows = []
+        for split in ("dev", "test"):
+            for cond in ("reference", "asr"):
+                v = post[split][f"rules/{cond}"]
+                old = nlp["extraction"].get(f"rules/{cond}") if split == "test" else None
+                rows.append(
+                    [
+                        split,
+                        cond,
+                        f"{old['fields']['f1']:.3f}" if old else "-",
+                        v["fields"]["f1"],
+                        v["fields"]["recall"],
+                        f"{old['contradictions']['f1']:.3f}" if old else "-",
+                        v["contradictions"]["f1"],
+                        v["preferences"]["f1"],
+                    ]
+                )
+        md += [
+            _t(
+                [
+                    "split",
+                    "condition",
+                    "field F1 v1.0",
+                    "field F1 v1.1",
+                    "field R v1.1",
+                    "contradiction F1 v1.0",
+                    "contradiction F1 v1.1",
+                    "preferences F1 v1.1",
+                ],
+                rows,
+            ),
+            "",
+        ]
+        ps = post["selective"]
+        rows = [
+            [title, ps[k]["automation_rate"], ps[k]["error_rate_on_automated"], ps[k]["errors_automated"], ps[k]["n"]]
+            for k, title in (
+                ("test_automate_all", "automate everything"),
+                ("test_rules_only", "review on missing/contradiction"),
+                ("test_selective", "+ confidence threshold (selective)"),
+            )
+        ]
+        md += [
+            "Automation with rules v1.1 (`asr`):",
+            "",
+            _t(["policy", "automation rate", "error rate on automated", "errors", "calls"], rows),
+            "",
+            'Remaining field errors on dev ASR are mostly ASR errors on short product names ("ОСАГО" -> '
+            '"осада"/"осага", "КАСКО" -> "кашка"), city names, and turns split by diarization. '
+            "They are not patched in the rules; the planned fix is ASR contextual biasing (hotwords).",
+            "",
+        ]
     rag = load("rag")
     if rag:
         md += [

@@ -23,6 +23,10 @@ from cci.domain.ru_numbers import parse_numbers
 from cci.domain.schema import Contradiction, Preferences
 from cci.synth import templates as T
 
+# 1.0: frozen before the test run. 1.1: hyphen/inflection normalization for ASR text, developed
+# on dev ASR transcripts after the test run exposed it (reported separately as post-hoc).
+RULES_VERSION = "1.1"
+
 QUESTION_CUES: list[tuple[str, re.Pattern]] = [
     ("policy_number", re.compile(r"номер (вашего )?(полиса|договора)")),
     ("claim_number", re.compile(r"номер (убытка|вашего заявления|заявления)")),
@@ -30,10 +34,10 @@ QUESTION_CUES: list[tuple[str, re.Pattern]] = [
     ("incident_place", re.compile(r"где это|место происшеств|в каком городе")),
     ("address", re.compile(r"адрес")),
     ("damage_type", re.compile(r"что именно произошло|характер повреждения")),
-    ("injuries", re.compile(r"пострадавш|кто-нибудь пострадал")),
+    ("injuries", re.compile(r"пострадавш|кто нибудь пострадал")),
     ("other_party", re.compile(r"второй участник|другой автомобиль")),
     ("amount", re.compile(r"оценить ущерб|какую сумму")),
-    ("product", re.compile(r"вид страхования|какой это продукт")),
+    ("product", re.compile(r"вид страхован|какой это продукт")),
     ("change_type", re.compile(r"что именно нужно изменить")),
     ("new_value", re.compile(r"новое значение|новые данные")),
     ("document_type", re.compile(r"какой именно документ")),
@@ -81,7 +85,8 @@ class Extraction:
 
 
 def _norm(t: str) -> str:
-    return t.lower().replace("ё", "е")
+    # Hyphens become spaces: ASR writes "что нибудь", the reference "что-нибудь" (rules v1.1).
+    return re.sub(r"\s+", " ", t.lower().replace("ё", "е").replace("-", " "))
 
 
 def _keyword(fld: str, text: str) -> str | None:
@@ -176,7 +181,7 @@ def extract(turns: list[tuple[str, str]], call_date: dt.date | None = None) -> E
             q = _question_field(text)
             if q:
                 pending = q
-            elif "что-нибудь еще" in t:
+            elif "что нибудь еще" in t:
                 pending = "__restatement__"
             continue
         if role != "client":

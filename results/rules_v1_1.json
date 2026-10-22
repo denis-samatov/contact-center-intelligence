@@ -1,0 +1,440 @@
+{
+ "suite": "rules_v1_1",
+ "manifest": {
+  "created_utc": "2026-10-22T16:04:10+00:00",
+  "python": "3.12.3",
+  "platform": "Linux-6.18.44-fc-v140-x86_64-with-glibc2.39",
+  "packages": {
+   "sherpa-onnx": "1.13.8",
+   "scikit-learn": "1.9.1",
+   "numpy": "2.5.4",
+   "pymorphy3": "2.0.6",
+   "mlflow": "3.17.2",
+   "fastapi": "0.159.1",
+   "sqlalchemy": "2.1.6",
+   "httpx": "0.28.1"
+  },
+  "git_commit": "e576c2cc628e192de415e443a6b1584b87408096",
+  "command": [
+   "/home/user/portfolio/contact-center-intelligence/.venv/bin/cci",
+   "eval-rules"
+  ]
+ },
+ "rules_version": "1.1",
+ "post_hoc": true,
+ "dev": {
+  "rules/reference": {
+   "fields": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "per_field_recall": {
+     "address": 1.0,
+     "amount": 1.0,
+     "cancellation_reason": 1.0,
+     "change_type": 1.0,
+     "claim_number": 1.0,
+     "complaint_subject": 1.0,
+     "damage_type": 1.0,
+     "document_type": 1.0,
+     "incident_date": 1.0,
+     "incident_place": 1.0,
+     "injuries": 1.0,
+     "new_value": 1.0,
+     "other_party": 1.0,
+     "policy_number": 1.0,
+     "product": 1.0,
+     "question_topic": 1.0
+    },
+    "pairs": 388
+   },
+   "contradictions": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "support": 12
+   },
+   "preferences": {
+    "precision": 0.8153846153846154,
+    "recall": 0.726027397260274,
+    "f1": 0.7681159420289856,
+    "support": 73
+   },
+   "seconds_per_call": 0.0003220534199014461
+  },
+  "rules/asr": {
+   "fields": {
+    "precision": 0.9539877300613497,
+    "recall": 0.8015463917525774,
+    "f1": 0.8711484593837535,
+    "per_field_recall": {
+     "address": 0.9285714285714286,
+     "amount": 1.0,
+     "cancellation_reason": 0.5454545454545454,
+     "change_type": 0.8421052631578947,
+     "claim_number": 0.9629629629629629,
+     "complaint_subject": 1.0,
+     "damage_type": 0.7142857142857143,
+     "document_type": 1.0,
+     "incident_date": 0.9642857142857143,
+     "incident_place": 0.26666666666666666,
+     "injuries": 1.0,
+     "new_value": 0.4117647058823529,
+     "other_party": 1.0,
+     "policy_number": 0.8854166666666666,
+     "product": 0.3333333333333333,
+     "question_topic": 0.9333333333333333
+    },
+    "pairs": 388
+   },
+   "contradictions": {
+    "precision": 1.0,
+    "recall": 0.8333333333333334,
+    "f1": 0.9090909090909091,
+    "support": 12
+   },
+   "preferences": {
+    "precision": 0.8070175438596491,
+    "recall": 0.6301369863013698,
+    "f1": 0.7076923076923077,
+    "support": 73
+   },
+   "seconds_per_call": 0.000283321133319987
+  }
+ },
+ "test": {
+  "rules/reference": {
+   "fields": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "per_field_recall": {
+     "address": 1.0,
+     "amount": 1.0,
+     "cancellation_reason": 1.0,
+     "change_type": 1.0,
+     "claim_number": 1.0,
+     "complaint_subject": 1.0,
+     "damage_type": 1.0,
+     "document_type": 1.0,
+     "incident_date": 1.0,
+     "incident_place": 1.0,
+     "injuries": 1.0,
+     "new_value": 1.0,
+     "other_party": 1.0,
+     "policy_number": 1.0,
+     "product": 1.0,
+     "question_topic": 1.0
+    },
+    "pairs": 411
+   },
+   "contradictions": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "support": 7
+   },
+   "preferences": {
+    "precision": 0.8333333333333334,
+    "recall": 0.8333333333333334,
+    "f1": 0.8333333333333334,
+    "support": 60
+   },
+   "seconds_per_call": 0.0001752496468301009
+  },
+  "rules/asr": {
+   "fields": {
+    "precision": 0.9518413597733711,
+    "recall": 0.8175182481751825,
+    "f1": 0.8795811518324608,
+    "per_field_recall": {
+     "address": 1.0,
+     "amount": 1.0,
+     "cancellation_reason": 0.5909090909090909,
+     "change_type": 0.9444444444444444,
+     "claim_number": 0.9166666666666666,
+     "complaint_subject": 1.0,
+     "damage_type": 0.5294117647058824,
+     "document_type": 0.9411764705882353,
+     "incident_date": 0.8529411764705882,
+     "incident_place": 0.5,
+     "injuries": 0.8823529411764706,
+     "new_value": 0.5882352941176471,
+     "other_party": 1.0,
+     "policy_number": 0.9117647058823529,
+     "product": 0.3,
+     "question_topic": 0.875
+    },
+    "pairs": 411
+   },
+   "contradictions": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "support": 7
+   },
+   "preferences": {
+    "precision": 0.8245614035087719,
+    "recall": 0.7833333333333333,
+    "f1": 0.8034188034188033,
+    "support": 60
+   },
+   "seconds_per_call": 0.00014687708009053797
+  }
+ },
+ "test_subset": {
+  "rules/reference": {
+   "fields": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "per_field_recall": {
+     "address": 1.0,
+     "amount": 1.0,
+     "cancellation_reason": 1.0,
+     "change_type": 1.0,
+     "claim_number": 1.0,
+     "complaint_subject": 1.0,
+     "damage_type": 1.0,
+     "document_type": 1.0,
+     "incident_date": 1.0,
+     "incident_place": 1.0,
+     "injuries": 1.0,
+     "new_value": 1.0,
+     "other_party": 1.0,
+     "policy_number": 1.0,
+     "product": 1.0,
+     "question_topic": 1.0
+    },
+    "pairs": 156
+   },
+   "contradictions": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "support": 4
+   },
+   "preferences": {
+    "precision": 0.7619047619047619,
+    "recall": 0.7619047619047619,
+    "f1": 0.7619047619047619,
+    "support": 21
+   },
+   "seconds_per_call": 0.00014410668336495291
+  },
+  "rules/asr": {
+   "fields": {
+    "precision": 0.9393939393939394,
+    "recall": 0.7948717948717948,
+    "f1": 0.8611111111111112,
+    "per_field_recall": {
+     "address": 1.0,
+     "amount": 1.0,
+     "cancellation_reason": 0.625,
+     "change_type": 0.875,
+     "claim_number": 0.9166666666666666,
+     "complaint_subject": 1.0,
+     "damage_type": 0.3333333333333333,
+     "document_type": 1.0,
+     "incident_date": 0.8,
+     "incident_place": 0.5,
+     "injuries": 1.0,
+     "new_value": 0.5,
+     "other_party": 1.0,
+     "policy_number": 0.9047619047619048,
+     "product": 0.26666666666666666,
+     "question_topic": 1.0
+    },
+    "pairs": 156
+   },
+   "contradictions": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "support": 4
+   },
+   "preferences": {
+    "precision": 0.75,
+    "recall": 0.7142857142857143,
+    "f1": 0.7317073170731706,
+    "support": 21
+   },
+   "seconds_per_call": 0.00013669911641045474
+  },
+  "rules/paraphrase": {
+   "fields": {
+    "precision": 0.9864864864864865,
+    "recall": 0.9358974358974359,
+    "f1": 0.9605263157894737,
+    "per_field_recall": {
+     "address": 1.0,
+     "amount": 1.0,
+     "cancellation_reason": 0.875,
+     "change_type": 0.875,
+     "claim_number": 1.0,
+     "complaint_subject": 1.0,
+     "damage_type": 0.8333333333333334,
+     "document_type": 1.0,
+     "incident_date": 1.0,
+     "incident_place": 1.0,
+     "injuries": 0.5,
+     "new_value": 1.0,
+     "other_party": 1.0,
+     "policy_number": 1.0,
+     "product": 0.7333333333333333,
+     "question_topic": 0.8333333333333334
+    },
+    "pairs": 156
+   },
+   "contradictions": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "support": 4
+   },
+   "preferences": {
+    "precision": 0.7619047619047619,
+    "recall": 0.7619047619047619,
+    "f1": 0.7619047619047619,
+    "support": 21
+   },
+   "seconds_per_call": 0.00014030435031600063
+  }
+ },
+ "selective": {
+  "condition": "asr",
+  "target_error_on_dev": 0.02,
+  "chosen_threshold": 1.01,
+  "dev_curve": [
+   {
+    "threshold": 0.0,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.05,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.1,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.15,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.2,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.25,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.3,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.35,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.4,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.45,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.5,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.55,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.6,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.65,
+    "dev_automation": 0.5,
+    "dev_error": 0.10666666666666667
+   },
+   {
+    "threshold": 0.7,
+    "dev_automation": 0.49333333333333335,
+    "dev_error": 0.0945945945945946
+   },
+   {
+    "threshold": 0.75,
+    "dev_automation": 0.46,
+    "dev_error": 0.08695652173913043
+   },
+   {
+    "threshold": 0.8,
+    "dev_automation": 0.4,
+    "dev_error": 0.08333333333333333
+   },
+   {
+    "threshold": 0.85,
+    "dev_automation": 0.38,
+    "dev_error": 0.08771929824561403
+   },
+   {
+    "threshold": 0.9,
+    "dev_automation": 0.29333333333333333,
+    "dev_error": 0.11363636363636363
+   },
+   {
+    "threshold": 0.95,
+    "dev_automation": 0.12,
+    "dev_error": 0.16666666666666666
+   },
+   {
+    "threshold": 1.0,
+    "dev_automation": 0.0,
+    "dev_error": 0.0
+   }
+  ],
+  "test_automate_all": {
+   "automation_rate": 1.0,
+   "error_rate_on_automated": 0.38,
+   "errors_automated": 57,
+   "automated": 150,
+   "n": 150,
+   "overall_case_error_if_all_automated": 0.38
+  },
+  "test_rules_only": {
+   "automation_rate": 0.5533333333333333,
+   "error_rate_on_automated": 0.08433734939759036,
+   "errors_automated": 7,
+   "automated": 83,
+   "n": 150,
+   "overall_case_error_if_all_automated": 0.38
+  },
+  "test_selective": {
+   "automation_rate": 0.0,
+   "error_rate_on_automated": null,
+   "errors_automated": 0,
+   "automated": 0,
+   "n": 150,
+   "overall_case_error_if_all_automated": 0.38
+  }
+ }
+}

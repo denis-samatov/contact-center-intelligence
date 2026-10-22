@@ -6,6 +6,7 @@ cci paraphrase  --split test                         LLM-paraphrased client turn
 cci eval-asr    --split test --condition clean        WER/CER/RTF for all backends + diarization
 cci transcribe  --split dev|test                      cache GigaAM transcripts + roles for NLP eval
 cci eval-nlp                                          intent / extraction / selective automation
+cci eval-rules                                        rules extractor (current version) on dev + test, post-hoc
 cci eval-rag                                          retrieval + closed-book vs grounded answers
 cci train-intent                                      train + register in MLflow (quality gate)
 cci serve | cci worker
@@ -273,6 +274,25 @@ def cmd_eval_nlp(a) -> None:
     )
 
 
+def cmd_eval_rules(a) -> None:
+    """Re-score the current rules version without the LLM. Written to a separate file: rules
+    changes made after the frozen test run are post-hoc and reported as such."""
+    from cci.eval.nlp_eval import run_extraction, run_selective
+    from cci.nlp.intent import TfidfIntent
+    from cci.nlp.rules import RULES_VERSION
+    from cci.nlp.rules import extract as rule_extract
+
+    train, dev, test = _items("train"), _items("dev"), _items("test")
+    tfidf = TfidfIntent().fit([it["text_reference"] for it in train], [it["label"]["intent"] for it in train])
+    res = {"rules_version": RULES_VERSION, "post_hoc": True}
+    for name, items in (("dev", dev), ("test", test)):
+        res[name] = run_extraction(items, ["reference", "asr"], {"rules": rule_extract})
+    sub = test[:60]
+    res["test_subset"] = run_extraction(sub, ["reference", "asr", "paraphrase"], {"rules": rule_extract})
+    res["selective"] = run_selective(tfidf, dev, test, "asr")
+    _write(f"rules_v{RULES_VERSION.replace('.', '_')}", res)
+
+
 def cmd_eval_rag(a) -> None:
     from cci.eval.rag_eval import eval_rag
 
@@ -370,6 +390,7 @@ def main(argv: list[str] | None = None) -> int:
     n.add_argument("--no-llm", action="store_true")
     n.add_argument("--llm-limit", type=int, default=60)
     n.set_defaults(fn=cmd_eval_nlp)
+    sub.add_parser("eval-rules").set_defaults(fn=cmd_eval_rules)
     r = sub.add_parser("eval-rag")
     r.add_argument("--no-llm", action="store_true")
     r.add_argument("--no-embed", action="store_true")
