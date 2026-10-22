@@ -320,4 +320,16 @@ def create_app(settings: Settings | None = None, answerer=None, limiter: TokenBu
             ]
         return json.loads(json.dumps(daily_report(data)))
 
+    @app.get("/v1/dashboard")
+    def dashboard(_: str = Depends(auth)):
+        from cci.analytics.dashboard import offline_quality, operations
+
+        with Session() as session:
+            calls = [
+                {"status": c.status, "duration_s": c.duration_s, "timings": c.timings}
+                for c in session.scalars(select(CallRow))
+            ]
+        ops = operations(calls, analytics("dashboard"))
+        return json.loads(json.dumps({"operations": ops, "offline_quality": offline_quality(s.results_dir)}))
+
     return app

@@ -18,24 +18,33 @@ import time
 import numpy as np
 
 from cci.domain.schema import Intent, fields_for
-from cci.eval.metrics import bootstrap_ci, extraction_prf, macro_f1, set_prf
+from cci.eval.metrics import bootstrap_ci, cluster_bootstrap_ci, extraction_prf, macro_f1, set_prf
 from cci.nlp.case import ReviewPolicy, build_case
 from cci.nlp.rules import Extraction
 from cci.nlp.rules import extract as rule_extract
 
 
-def intent_scores(gold: list[str], pred: list[str]) -> dict:
+def intent_scores(gold: list[str], pred: list[str], groups: list[str] | None = None) -> dict:
+    """Accuracy and macro-F1 with call-level bootstrap CIs; with ``groups`` also cluster-bootstrap
+    CIs that resample whole template groups (the honest interval when calls share templates)."""
     acc = [float(g == p) for g, p in zip(gold, pred, strict=True)]
     lo, hi = bootstrap_ci(acc)
     idx = list(range(len(gold)))
     mf_lo, mf_hi = bootstrap_ci(idx, stat=lambda s: macro_f1([gold[i] for i in s], [pred[i] for i in s]))
-    return {
+    out = {
         "accuracy": sum(acc) / len(acc),
         "accuracy_ci95": [lo, hi],
         "macro_f1": macro_f1(gold, pred),
         "macro_f1_ci95": [mf_lo, mf_hi],
         "n": len(gold),
     }
+    if groups is not None:
+        out["groups"] = len(set(groups))
+        out["accuracy_ci95_cluster"] = list(cluster_bootstrap_ci(groups, lambda s: sum(acc[i] for i in s) / len(s)))
+        out["macro_f1_ci95_cluster"] = list(
+            cluster_bootstrap_ci(groups, lambda s: macro_f1([gold[i] for i in s], [pred[i] for i in s]))
+        )
+    return out
 
 
 def run_intent(models: dict, items: list[dict], conditions: list[str]) -> dict:

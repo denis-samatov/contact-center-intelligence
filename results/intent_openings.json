@@ -1,0 +1,661 @@
+{
+ "suite": "intent_openings",
+ "manifest": {
+  "created_utc": "2026-10-22T19:20:59+00:00",
+  "python": "3.12.3",
+  "platform": "Linux-6.18.44-fc-v140-x86_64-with-glibc2.39",
+  "packages": {
+   "sherpa-onnx": "1.13.8",
+   "scikit-learn": "1.9.1",
+   "numpy": "2.5.4",
+   "pymorphy3": "2.0.6",
+   "mlflow": "3.17.2",
+   "fastapi": "0.159.1",
+   "sqlalchemy": "2.1.6",
+   "httpx": "0.28.1"
+  },
+  "git_commit": "18bca7e5b400dbb9eb93ef62950265a5e09021ed",
+  "command": [
+   ".venv/bin/cci",
+   "eval-intent"
+  ]
+ },
+ "distinct_openings": {
+  "dev": 27,
+  "test": 27,
+  "test_subset60": 26
+ },
+ "models": {
+  "tfidf_lr/reference": {
+   "accuracy": 0.5466666666666666,
+   "accuracy_ci95": [
+    0.4666666666666667,
+    0.6266666666666667
+   ],
+   "macro_f1": 0.519967346404128,
+   "macro_f1_ci95": [
+    0.437586541353163,
+    0.5824579341495532
+   ],
+   "n": 150,
+   "groups": 27,
+   "accuracy_ci95_cluster": [
+    0.3401360544217687,
+    0.7323943661971831
+   ],
+   "macro_f1_ci95_cluster": [
+    0.2598630542902989,
+    0.6620610903181325
+   ]
+  },
+  "tfidf_lr/asr": {
+   "accuracy": 0.58,
+   "accuracy_ci95": [
+    0.5,
+    0.6533333333333333
+   ],
+   "macro_f1": 0.5758133630612714,
+   "macro_f1_ci95": [
+    0.48546550323310306,
+    0.6424588263489678
+   ],
+   "n": 150,
+   "groups": 27,
+   "accuracy_ci95_cluster": [
+    0.38848920863309355,
+    0.7677419354838709
+   ],
+   "macro_f1_ci95_cluster": [
+    0.2966096866096866,
+    0.7256075992100837
+   ]
+  },
+  "tfidf_lr/paraphrase": {
+   "accuracy": 0.45,
+   "accuracy_ci95": [
+    0.31666666666666665,
+    0.5666666666666667
+   ],
+   "macro_f1": 0.42559895480432114,
+   "macro_f1_ci95": [
+    0.27479473093508183,
+    0.5341090282266753
+   ],
+   "n": 60,
+   "groups": 26,
+   "accuracy_ci95_cluster": [
+    0.29850746268656714,
+    0.6065573770491803
+   ],
+   "macro_f1_ci95_cluster": [
+    0.25639834881320955,
+    0.5442821067821068
+   ]
+  },
+  "localdesk/reference": {
+   "accuracy": 0.43333333333333335,
+   "accuracy_ci95": [
+    0.35333333333333333,
+    0.5133333333333333
+   ],
+   "macro_f1": 0.3598286894545742,
+   "macro_f1_ci95": [
+    0.2997418707519027,
+    0.40757718502816537
+   ],
+   "n": 150,
+   "groups": 27,
+   "accuracy_ci95_cluster": [
+    0.2360248447204969,
+    0.6339869281045751
+   ],
+   "macro_f1_ci95_cluster": [
+    0.20000240373058986,
+    0.4905284147557328
+   ]
+  },
+  "localdesk/asr": {
+   "accuracy": 0.4666666666666667,
+   "accuracy_ci95": [
+    0.38666666666666666,
+    0.5466666666666666
+   ],
+   "macro_f1": 0.42773132059249946,
+   "macro_f1_ci95": [
+    0.35469202109601666,
+    0.48234672681837104
+   ],
+   "n": 150,
+   "groups": 27,
+   "accuracy_ci95_cluster": [
+    0.2733812949640288,
+    0.6646706586826348
+   ],
+   "macro_f1_ci95_cluster": [
+    0.22544645959280107,
+    0.5727996678123304
+   ]
+  },
+  "localdesk/paraphrase": {
+   "accuracy": 0.43333333333333335,
+   "accuracy_ci95": [
+    0.31666666666666665,
+    0.5666666666666667
+   ],
+   "macro_f1": 0.3786699865131238,
+   "macro_f1_ci95": [
+    0.2605317387926084,
+    0.46772486772486777
+   ],
+   "n": 60,
+   "groups": 26,
+   "accuracy_ci95_cluster": [
+    0.25925925925925924,
+    0.6153846153846154
+   ],
+   "macro_f1_ci95_cluster": [
+    0.23216207660652102,
+    0.5031345686833492
+   ]
+  },
+  "embedding_lr/reference": {
+   "accuracy": 0.8066666666666666,
+   "accuracy_ci95": [
+    0.74,
+    0.8666666666666667
+   ],
+   "macro_f1": 0.8061591734451126,
+   "macro_f1_ci95": [
+    0.7307272963094379,
+    0.8642686159088725
+   ],
+   "n": 150,
+   "groups": 27,
+   "accuracy_ci95_cluster": [
+    0.6190476190476191,
+    0.9583333333333334
+   ],
+   "macro_f1_ci95_cluster": [
+    0.5829479082521427,
+    0.958505024217451
+   ]
+  },
+  "embedding_lr/asr": {
+   "accuracy": 0.8,
+   "accuracy_ci95": [
+    0.7333333333333333,
+    0.8666666666666667
+   ],
+   "macro_f1": 0.8017822086905534,
+   "macro_f1_ci95": [
+    0.7325451382058756,
+    0.8589259558186112
+   ],
+   "n": 150,
+   "groups": 27,
+   "accuracy_ci95_cluster": [
+    0.6524822695035462,
+    0.9254658385093167
+   ],
+   "macro_f1_ci95_cluster": [
+    0.606099826099826,
+    0.9248122248122248
+   ]
+  },
+  "embedding_lr/paraphrase": {
+   "accuracy": 0.7166666666666667,
+   "accuracy_ci95": [
+    0.6,
+    0.8333333333333334
+   ],
+   "macro_f1": 0.6887308225543519,
+   "macro_f1_ci95": [
+    0.549667940896011,
+    0.7938572798221921
+   ],
+   "n": 60,
+   "groups": 26,
+   "accuracy_ci95_cluster": [
+    0.5185185185185185,
+    0.9
+   ],
+   "macro_f1_ci95_cluster": [
+    0.46003687670354343,
+    0.8828632244724199
+   ]
+  },
+  "llm_zero_shot[subset]/reference": {
+   "accuracy": 0.4666666666666667,
+   "accuracy_ci95": [
+    0.3333333333333333,
+    0.6
+   ],
+   "macro_f1": 0.4181790918633024,
+   "macro_f1_ci95": [
+    0.3367320261437909,
+    0.48804403481822833
+   ],
+   "n": 60,
+   "groups": 26,
+   "accuracy_ci95_cluster": [
+    0.2647058823529412,
+    0.6956521739130435
+   ],
+   "macro_f1_ci95_cluster": [
+    0.2925824175824176,
+    0.5944170771756978
+   ]
+  },
+  "llm_zero_shot[subset]/asr": {
+   "accuracy": 0.43333333333333335,
+   "accuracy_ci95": [
+    0.3,
+    0.5666666666666667
+   ],
+   "macro_f1": 0.3957466825113884,
+   "macro_f1_ci95": [
+    0.2823633156966491,
+    0.4876992143658811
+   ],
+   "n": 60,
+   "groups": 26,
+   "accuracy_ci95_cluster": [
+    0.24285714285714285,
+    0.6551724137931034
+   ],
+   "macro_f1_ci95_cluster": [
+    0.23491349987513668,
+    0.58337341670675
+   ]
+  },
+  "llm_zero_shot[subset]/paraphrase": {
+   "accuracy": 0.5333333333333333,
+   "accuracy_ci95": [
+    0.4166666666666667,
+    0.6666666666666666
+   ],
+   "macro_f1": 0.47520568613919,
+   "macro_f1_ci95": [
+    0.36472826875125725,
+    0.5642137751786875
+   ],
+   "n": 60,
+   "groups": 26,
+   "accuracy_ci95_cluster": [
+    0.34375,
+    0.7377049180327869
+   ],
+   "macro_f1_ci95_cluster": [
+    0.3362597547380156,
+    0.6585710041592394
+   ]
+  }
+ },
+ "localdesk": {
+  "fit_s": 2.37151799700041,
+  "run": {
+   "run_id": "20261022T191605-d72b5006",
+   "qualified": null,
+   "dev_report": {
+    "backend": "tfidf",
+    "probability_kind": "softmax_temperature_fitted_on_calibration",
+    "count": 27,
+    "classification": {
+     "count": 27,
+     "accuracy": 0.4444444444444444,
+     "ece": 0.13946385886584767,
+     "nll": 1.5455710585512625,
+     "brier": 0.6889777004188711,
+     "macro_recall": 0.4444444444444444,
+     "per_class_recall": {
+      "claim_auto": 0.3333333333333333,
+      "claim_property": 0.3333333333333333,
+      "payment_status": 0.6666666666666666,
+      "policy_renewal": 1.0,
+      "policy_cancellation": 0.3333333333333333,
+      "data_change": 0.6666666666666666,
+      "complaint": 0.0,
+      "document_request": 0.6666666666666666,
+      "general_info": 0.0
+     },
+     "per_class_support": {
+      "claim_auto": 3,
+      "claim_property": 3,
+      "payment_status": 3,
+      "policy_renewal": 3,
+      "policy_cancellation": 3,
+      "data_change": 3,
+      "complaint": 3,
+      "document_request": 3,
+      "general_info": 3
+     },
+     "per_class": {
+      "claim_auto": {
+       "precision": 1.0,
+       "recall": 0.3333333333333333,
+       "f1": 0.5,
+       "support": 3
+      },
+      "claim_property": {
+       "precision": 0.3333333333333333,
+       "recall": 0.3333333333333333,
+       "f1": 0.3333333333333333,
+       "support": 3
+      },
+      "payment_status": {
+       "precision": 0.2857142857142857,
+       "recall": 0.6666666666666666,
+       "f1": 0.4,
+       "support": 3
+      },
+      "policy_renewal": {
+       "precision": 0.75,
+       "recall": 1.0,
+       "f1": 0.8571428571428571,
+       "support": 3
+      },
+      "policy_cancellation": {
+       "precision": 0.5,
+       "recall": 0.3333333333333333,
+       "f1": 0.4,
+       "support": 3
+      },
+      "data_change": {
+       "precision": 1.0,
+       "recall": 0.6666666666666666,
+       "f1": 0.8,
+       "support": 3
+      },
+      "complaint": {
+       "precision": 0.0,
+       "recall": 0.0,
+       "f1": 0.0,
+       "support": 3
+      },
+      "document_request": {
+       "precision": 0.3333333333333333,
+       "recall": 0.6666666666666666,
+       "f1": 0.4444444444444444,
+       "support": 3
+      },
+      "general_info": {
+       "precision": 0.0,
+       "recall": 0.0,
+       "f1": 0.0,
+       "support": 3
+      }
+     },
+     "confusion_matrix": {
+      "claim_auto": {
+       "claim_auto": 1,
+       "claim_property": 1,
+       "payment_status": 0,
+       "policy_renewal": 0,
+       "policy_cancellation": 0,
+       "data_change": 0,
+       "complaint": 0,
+       "document_request": 1,
+       "general_info": 0
+      },
+      "claim_property": {
+       "claim_auto": 0,
+       "claim_property": 1,
+       "payment_status": 1,
+       "policy_renewal": 0,
+       "policy_cancellation": 0,
+       "data_change": 0,
+       "complaint": 0,
+       "document_request": 1,
+       "general_info": 0
+      },
+      "payment_status": {
+       "claim_auto": 0,
+       "claim_property": 0,
+       "payment_status": 2,
+       "policy_renewal": 0,
+       "policy_cancellation": 0,
+       "data_change": 0,
+       "complaint": 0,
+       "document_request": 0,
+       "general_info": 1
+      },
+      "policy_renewal": {
+       "claim_auto": 0,
+       "claim_property": 0,
+       "payment_status": 0,
+       "policy_renewal": 3,
+       "policy_cancellation": 0,
+       "data_change": 0,
+       "complaint": 0,
+       "document_request": 0,
+       "general_info": 0
+      },
+      "policy_cancellation": {
+       "claim_auto": 0,
+       "claim_property": 0,
+       "payment_status": 0,
+       "policy_renewal": 1,
+       "policy_cancellation": 1,
+       "data_change": 0,
+       "complaint": 0,
+       "document_request": 0,
+       "general_info": 1
+      },
+      "data_change": {
+       "claim_auto": 0,
+       "claim_property": 0,
+       "payment_status": 0,
+       "policy_renewal": 0,
+       "policy_cancellation": 1,
+       "data_change": 2,
+       "complaint": 0,
+       "document_request": 0,
+       "general_info": 0
+      },
+      "complaint": {
+       "claim_auto": 0,
+       "claim_property": 0,
+       "payment_status": 2,
+       "policy_renewal": 0,
+       "policy_cancellation": 0,
+       "data_change": 0,
+       "complaint": 0,
+       "document_request": 1,
+       "general_info": 0
+      },
+      "document_request": {
+       "claim_auto": 0,
+       "claim_property": 0,
+       "payment_status": 1,
+       "policy_renewal": 0,
+       "policy_cancellation": 0,
+       "data_change": 0,
+       "complaint": 0,
+       "document_request": 2,
+       "general_info": 0
+      },
+      "general_info": {
+       "claim_auto": 0,
+       "claim_property": 1,
+       "payment_status": 1,
+       "policy_renewal": 0,
+       "policy_cancellation": 0,
+       "data_change": 0,
+       "complaint": 0,
+       "document_request": 1,
+       "general_info": 0
+      }
+     },
+     "macro_f1": 0.4149911816578483,
+     "weighted_f1": 0.4149911816578484
+    },
+    "accepted_count": 1,
+    "coverage": 0.037037037037037035,
+    "accepted_accuracy": 1.0,
+    "policy": {
+     "min_confidence": 0.75,
+     "min_margin": 0.2
+    },
+    "risk_coverage": {
+     "ranking": "max_probability",
+     "aurc": 0.4397694496336829,
+     "points": [
+      {
+       "coverage": 0.07407407407407407,
+       "accuracy": 1.0,
+       "min_confidence": 0.6637453291738252
+      },
+      {
+       "coverage": 0.1111111111111111,
+       "accuracy": 1.0,
+       "min_confidence": 0.6526102295146273
+      },
+      {
+       "coverage": 0.18518518518518517,
+       "accuracy": 0.8,
+       "min_confidence": 0.5305745788114433
+      },
+      {
+       "coverage": 0.2222222222222222,
+       "accuracy": 0.6666666666666666,
+       "min_confidence": 0.43141549452996275
+      },
+      {
+       "coverage": 0.25925925925925924,
+       "accuracy": 0.5714285714285714,
+       "min_confidence": 0.392014189664018
+      },
+      {
+       "coverage": 0.3333333333333333,
+       "accuracy": 0.5555555555555556,
+       "min_confidence": 0.37349934096841975
+      },
+      {
+       "coverage": 0.37037037037037035,
+       "accuracy": 0.6,
+       "min_confidence": 0.3284237654988499
+      },
+      {
+       "coverage": 0.4074074074074074,
+       "accuracy": 0.6363636363636364,
+       "min_confidence": 0.32558492322994176
+      },
+      {
+       "coverage": 0.48148148148148145,
+       "accuracy": 0.5384615384615384,
+       "min_confidence": 0.3064730661899009
+      },
+      {
+       "coverage": 0.5185185185185185,
+       "accuracy": 0.5,
+       "min_confidence": 0.2934535254558623
+      },
+      {
+       "coverage": 0.5555555555555556,
+       "accuracy": 0.4666666666666667,
+       "min_confidence": 0.28436612910497344
+      },
+      {
+       "coverage": 0.6296296296296297,
+       "accuracy": 0.4117647058823529,
+       "min_confidence": 0.2673693022856711
+      },
+      {
+       "coverage": 0.6666666666666666,
+       "accuracy": 0.3888888888888889,
+       "min_confidence": 0.24909006936098896
+      },
+      {
+       "coverage": 0.7037037037037037,
+       "accuracy": 0.42105263157894735,
+       "min_confidence": 0.24783182190266176
+      },
+      {
+       "coverage": 0.7777777777777778,
+       "accuracy": 0.38095238095238093,
+       "min_confidence": 0.23408104408089173
+      },
+      {
+       "coverage": 0.8148148148148148,
+       "accuracy": 0.36363636363636365,
+       "min_confidence": 0.21628732811423101
+      },
+      {
+       "coverage": 0.8518518518518519,
+       "accuracy": 0.391304347826087,
+       "min_confidence": 0.20658379100518706
+      },
+      {
+       "coverage": 0.9259259259259259,
+       "accuracy": 0.44,
+       "min_confidence": 0.19220637653988867
+      },
+      {
+       "coverage": 0.9629629629629629,
+       "accuracy": 0.46153846153846156,
+       "min_confidence": 0.19201553796915166
+      },
+      {
+       "coverage": 1.0,
+       "accuracy": 0.4444444444444444,
+       "min_confidence": 0.19186559731615174
+      }
+     ],
+     "coverage_at_accuracy": {
+      "0.90": 0.1111111111111111,
+      "0.95": 0.1111111111111111,
+      "0.99": 0.1111111111111111
+     }
+    },
+    "task_sha256": "f667fddf82d2eafa8328dbb9b604d30b5a1b47ba2e68a5ef405d3c058e311814",
+    "dataset_split_sha256": {
+     "train": "18ab09692b6458679cc4d7ba943d5986b364a647afc0a98ccdf42f5c84154f63",
+     "calibration": "2e4aa5b1f77c777106cfd920e31c963937cf21d3a60b396651ba6e2c48596511",
+     "test": "d61e10cb119bfe04193fb04782af66778bb66b072aa3bb464a6a22a854a46eb1"
+    },
+    "evidence": "synthetic_cci_corpus_seed_20261023",
+    "split_counts": {
+     "train": 45,
+     "calibration": 9,
+     "test": 27
+    },
+    "training": {
+     "temperature": 0.6321404131896728,
+     "versions": {
+      "scikit-learn": "1.9.1",
+      "numpy": "2.5.4",
+      "scipy": "1.18.1"
+     },
+     "calibration_nll": 1.990944777040016
+    },
+    "runtime_seconds": 2.2787734499997896
+   }
+  },
+  "selective_default_thresholds": {
+   "dev/reference": {
+    "route_rate": 0.03333333333333333,
+    "accuracy_on_routed": 1.0,
+    "routed": 5,
+    "n": 150
+   },
+   "dev/asr": {
+    "route_rate": 0.02666666666666667,
+    "accuracy_on_routed": 1.0,
+    "routed": 4,
+    "n": 150
+   },
+   "test/reference": {
+    "route_rate": 0.0,
+    "accuracy_on_routed": null,
+    "routed": 0,
+    "n": 150
+   },
+   "test/asr": {
+    "route_rate": 0.0,
+    "accuracy_on_routed": null,
+    "routed": 0,
+    "n": 150
+   }
+  }
+ }
+}

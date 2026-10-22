@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     storage_dir: Path = Path("./storage")
     models_dir: Path = Path("./models")
     kb_dir: Path = Path("./data/kb")
+    results_dir: Path = Path("./results")  # committed offline evaluation shown on the dashboard
     api_key: SecretStr | None = None  # required unless allow_anonymous_local
     allow_anonymous_local: bool = False
     max_upload_mb: int = Field(50, ge=1, le=500)

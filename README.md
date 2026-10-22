@@ -30,7 +30,7 @@ Containers: `CCI_API_KEY=... docker compose up` (behind a TLS-intercepting proxy
 key, read-only root FS, non-root user. The `llm`/`embed` llama.cpp images were **not** built in
 this environment (Debian package mirror unreachable); the same servers ran natively.
 
-![Case card for a synthetic call: ASR transcript with timestamps and roles, extracted fields, a detected contradiction, protocol and a reply draft with sources](docs/img/case.png)
+![Case card for a synthetic call (detected contradiction, protocol, reply draft with sources), operations panel for this deployment and the offline-quality table with source files](docs/img/case.png)
 
 ## Measured results (CPU, synthetic speech)
 
@@ -54,13 +54,18 @@ selected on dev raises this to 0.9985 with no call below 0.9 ([ADR-B8](docs/adr/
 
 | model | reference | ASR (telephony) | LLM paraphrase [60] |
 |---|---:|---:|---:|
-| TF-IDF + logistic regression | 0.547 (0.467-0.627) | 0.580 | 0.450 |
-| Qwen3-Embedding-0.6B + logistic regression | **0.807** (0.740-0.867) | **0.800** | **0.717** |
+| TF-IDF + logistic regression | 0.547 (0.34-0.73) | 0.580 (0.39-0.77) | 0.450 |
+| [localdesk](https://github.com/denis-samatov/localdesk) 0.3.1 (calibrated, abstaining) | 0.433 (0.24-0.63) | 0.467 (0.27-0.67) | 0.433 |
+| Qwen3-Embedding-0.6B + logistic regression | **0.807** (0.62-0.96) | **0.800** (0.65-0.93) | **0.717** |
 | Qwen3-1.7B zero-shot [60] | 0.467 | 0.433 | 0.533 |
 
-Accuracy with 95% bootstrap CI; macro-F1 in the report. Test openings use a phrasing family
-never seen in training. Intent from the *full* transcript is 1.0 for every model and is not
-informative here (operator questions are intent-specific by construction).
+Accuracy with 95% **template-cluster** bootstrap CIs: the 150 test calls use only 27 distinct
+openings, so intervals resample templates, not calls (call-level intervals were 2-2.5x too
+narrow; [ADR-B9](docs/adr/ADR-B9-localdesk-and-template-clusters.md)). Embeddings lead, but with 27
+templates the intervals overlap. localdesk abstains on every test call at its default
+thresholds - correct for a weak model, useless for automation on this corpus. Test openings come
+from a phrasing family never seen in training. Intent from the *full* transcript is 1.0 for
+every model and is not informative here (operator questions are intent-specific by construction).
 
 **Case extraction** (micro P/R over the gold intent's fields)
 
@@ -108,12 +113,13 @@ the rulebook is fictional, so it measures how often the model answers without kn
 | Per-key rate limiting (429 + `Retry-After`), health/metrics exempt | `src/cci/app/ratelimit.py` |
 | VAD, ASR with timestamps, diarization, roles | `src/cci/speech/` |
 | Russian numeral normalization (words <-> digits, dictated groups) | `src/cci/domain/ru_numbers.py` |
-| Intent: TF-IDF / embeddings / LLM zero-shot | `src/cci/nlp/intent.py` |
+| Intent: TF-IDF / embeddings / LLM zero-shot / localdesk | `src/cci/nlp/intent.py`, `nlp/localdesk_intent.py` |
 | Extraction: rules with corrections & contradictions / LLM JSON schema | `src/cci/nlp/rules.py`, `nlp/llm_extract.py` |
 | Case: required fields, queue, next actions, review reasons, protocol, reply draft with sources | `src/cci/nlp/case.py` |
 | Grounded answers with citation and numeric verification | `src/cci/rag/` |
 | Operator corrections with optimistic locking, audit trail | `PATCH /v1/calls/{id}/case` |
 | Analytics: repeat contacts, queues, operator load, automation | `src/cci/analytics/metrics.py`, `GET /v1/analytics` |
+| Dashboard: operations of this deployment (processing p50/p95, RTF, automation, review reasons) next to the committed offline quality, each number with its source file | `src/cci/analytics/dashboard.py`, `GET /v1/dashboard`, UI |
 | MLflow registry with quality gate; Airflow nightly DAG | `src/cci/training.py`, `airflow/dags/cci_nightly.py` |
 
 ## Responsible use

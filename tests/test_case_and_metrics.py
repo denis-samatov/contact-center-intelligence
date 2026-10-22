@@ -60,3 +60,15 @@ def test_der_perfect_and_swapped_labels():
     assert der(ref, [Turn("spk1", 0, 1), Turn("spk0", 1.5, 3)])["der"] == 0.0
     # one hypothesis speaker for both: best map = client -> 1 s confusion + 0.5 s false alarm
     assert abs(der(ref, [Turn("spk0", 0, 3)])["der"] - (1.0 + 0.5) / 2.5) < 0.02
+
+
+def test_cluster_bootstrap_is_wider_when_calls_share_templates():
+    from cci.eval.metrics import bootstrap_ci, cluster_bootstrap_ci
+
+    # 3 templates x 50 calls: a template is either always right or always wrong.
+    groups = [f"t{i // 50}" for i in range(150)]
+    correct = [1.0 if g in ("t0", "t1") else 0.0 for g in groups]
+    call_lo, call_hi = bootstrap_ci(correct)
+    cl_lo, cl_hi = cluster_bootstrap_ci(groups, lambda idx: sum(correct[i] for i in idx) / len(idx))
+    assert cl_hi - cl_lo > 3 * (call_hi - call_lo)
+    assert cl_lo <= 2 / 3 <= cl_hi

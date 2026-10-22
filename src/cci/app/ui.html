@@ -30,6 +30,8 @@
   pre { white-space:pre-wrap; background:#f8fafc; border:1px solid var(--line); border-radius:6px; padding:8px; margin:0; }
   .row { display:flex; gap:8px; align-items:center; margin:6px 0; flex-wrap:wrap; }
   .muted { color:var(--muted); }
+  .kv td:first-child { color:var(--muted); } .kv td:last-child { text-align:right; font-variant-numeric: tabular-nums; }
+  .q td.v { text-align:right; font-variant-numeric: tabular-nums; } .q td.src { color:var(--muted); font-size:12px; }
 </style>
 </head>
 <body>
@@ -52,7 +54,7 @@
       <div id="upmsg" class="muted"></div>
     </div>
     <div class="card"><h2>Звонки</h2><div id="calls" class="calls"></div></div>
-    <div class="card"><h2>Аналитика</h2><pre id="analytics" class="muted">-</pre></div>
+    <div class="card"><h2>Операционные показатели</h2><div id="ops" class="muted">-</div></div>
   </section>
   <section>
     <div class="card" id="detail"><h2>Карточка обращения</h2><p class="muted">Выберите звонок слева.</p></div>
@@ -60,6 +62,11 @@
       <h2>Вопрос по правилам (RAG с источниками)</h2>
       <div class="row"><input id="q" type="text" placeholder="Например: какая франшиза по КАСКО?"><button onclick="ask()">Спросить</button></div>
       <pre id="answer" class="muted">-</pre>
+    </div>
+    <div class="card">
+      <h2>Качество моделей: офлайн-оценка (синтетический тест)</h2>
+      <p class="muted" style="margin:0 0 6px">Числа из зафиксированных файлов results/, а не по звонкам этой установки.</p>
+      <div id="quality" class="muted">-</div>
     </div>
   </section>
 </main>
@@ -83,8 +90,28 @@ async function refresh() {
     const rows = await api('/v1/calls');
     calls.innerHTML = rows.map(r => `<div onclick="show('${r.call_id}')"><span>${esc(r.filename)}<br><span class="muted">${esc(r.intent||'')}</span></span>
       <span class="pill ${esc(r.decision||r.status)}">${esc(r.decision||r.status)}</span></div>`).join('') || '<span class="muted">пусто</span>';
-    analytics.textContent = JSON.stringify(await api('/v1/analytics'), null, 1);
+    renderDashboard(await api('/v1/dashboard'));
   } catch (e) { calls.innerHTML = '<span class="muted">' + esc(e.message) + '</span>'; }
+}
+const f = (x, d=2) => x == null ? '-' : (typeof x === 'number' ? (Number.isInteger(x) ? x : x.toFixed(d)) : esc(x));
+const pc = x => x == null ? '-' : (100 * x).toFixed(1) + '%';
+function renderDashboard(d) {
+  const o = d.operations, a = o.automation || {}, rep = o.repeats || {};
+  const kv = [
+    ['Звонков', Object.entries(o.calls_by_status).map(([k, v]) => `${esc(k)}: ${v}`).join(', ') || '0'],
+    ['Обработка p50 / p95, с', `${f(o.processing_s.p50, 1)} / ${f(o.processing_s.p95, 1)}`],
+    ['RTF p50 (обработка / длительность)', f(o.real_time_factor.p50)],
+    ['Автоматизировано', `${a.automated ?? 0} из ${a.calls ?? 0} (${pc(a.automation_rate)})`],
+    ['Причины проверки', Object.entries(a.review_reasons || {}).map(([k, v]) => `${esc(k)}: ${v}`).join(', ') || '-'],
+    ['Очереди', Object.entries(o.queues || {}).map(([k, v]) => `${esc(k)}: ${v}`).join(', ') || '-'],
+    ['Повторные обращения (7 дней)', `${rep.repeat_contacts ?? 0} (${pc(rep.repeat_rate)})`],
+    ['Нагрузка: доля речи оператора', (o.operators || []).map(x => pc(x.operator_talk_share)).join(', ') || '-'],
+  ];
+  ops.innerHTML = '<table class="kv">' + kv.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('') + '</table>';
+  const q = d.offline_quality;
+  quality.innerHTML = q.length ? '<table class="q"><tr><th>область</th><th>метрика</th><th>значение</th><th>источник</th></tr>' +
+    q.map(r => `<tr><td>${esc(r.area)}</td><td>${esc(r.metric)}</td><td class="v">${f(r.value, 3)}</td><td class="src">${esc(r.source)}</td></tr>`).join('') +
+    '</table>' : 'нет файлов оценки';
 }
 let current = null;
 async function show(id) {

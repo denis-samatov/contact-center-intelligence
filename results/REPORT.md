@@ -26,7 +26,7 @@ transducers' words are compared fairly; the un-normalized WER is shown too.
 
 ## 2. Intent classification (test split, family-disjoint templates)
 
-Conditions: `reference` = gold transcript; `asr` = GigaAM-v2 + diarization on telephony audio; `paraphrase` = LLM-rewritten client turns (facts verified).
+Intervals in this section resample calls; calls share opening templates, so see 4a for template-cluster intervals. Conditions: `reference` = gold transcript; `asr` = GigaAM-v2 + diarization on telephony audio; `paraphrase` = LLM-rewritten client turns (facts verified).
 
 | model | condition | accuracy | 95% CI | macro-F1 | 95% CI | s/call |
 |---|---|---|---|---|---|---|
@@ -75,6 +75,34 @@ Condition `asr`. A case is wrong if intent, queue or any required field is wrong
 LLM usage during NLP evaluation (local Qwen3-1.7B Q4_K_M, CPU): 362 calls, 159702 prompt + 41127 completion tokens, 3410 s, 0 failures, 2 schema repairs. Monetary cost: none measured (local CPU).
 
 Paraphrase set: 205 of 284 client turns rewritten (acceptance 0.72); rejections: {'unchanged': 50, 'entity_or_cue_lost': 10, 'numbers_changed': 18, 'low_similarity': 1}.
+
+## 4a. Early-routing intent revisited: template-cluster CIs and localdesk
+
+Calls share opening templates: 27 distinct reference openings among the 150 test calls (27 on dev). Section 2's intervals resample calls and are therefore too narrow; the intervals below resample whole templates. Point estimates are unchanged.
+
+| model | condition | accuracy | CI (calls) | CI (templates) | macro-F1 | CI (templates) | templates | calls |
+|---|---|---|---|---|---|---|---|---|
+| tfidf_lr | reference | 0.547 | [0.467, 0.627] | [0.340, 0.732] | 0.520 | [0.260, 0.662] | 27 | 150 |
+| tfidf_lr | asr | 0.580 | [0.500, 0.653] | [0.388, 0.768] | 0.576 | [0.297, 0.726] | 27 | 150 |
+| tfidf_lr | paraphrase | 0.450 | [0.317, 0.567] | [0.299, 0.607] | 0.426 | [0.256, 0.544] | 26 | 60 |
+| localdesk | reference | 0.433 | [0.353, 0.513] | [0.236, 0.634] | 0.360 | [0.200, 0.491] | 27 | 150 |
+| localdesk | asr | 0.467 | [0.387, 0.547] | [0.273, 0.665] | 0.428 | [0.225, 0.573] | 27 | 150 |
+| localdesk | paraphrase | 0.433 | [0.317, 0.567] | [0.259, 0.615] | 0.379 | [0.232, 0.503] | 26 | 60 |
+| embedding_lr | reference | 0.807 | [0.740, 0.867] | [0.619, 0.958] | 0.806 | [0.583, 0.959] | 27 | 150 |
+| embedding_lr | asr | 0.800 | [0.733, 0.867] | [0.652, 0.925] | 0.802 | [0.606, 0.925] | 27 | 150 |
+| embedding_lr | paraphrase | 0.717 | [0.600, 0.833] | [0.519, 0.900] | 0.689 | [0.460, 0.883] | 26 | 60 |
+| llm_zero_shot[subset] | reference | 0.467 | [0.333, 0.600] | [0.265, 0.696] | 0.418 | [0.293, 0.594] | 26 | 60 |
+| llm_zero_shot[subset] | asr | 0.433 | [0.300, 0.567] | [0.243, 0.655] | 0.396 | [0.235, 0.583] | 26 | 60 |
+| llm_zero_shot[subset] | paraphrase | 0.533 | [0.417, 0.667] | [0.344, 0.738] | 0.475 | [0.336, 0.659] | 26 | 60 |
+
+localdesk (PyPI 0.3.1) trained through its own pipeline (calibration split, gates, registry) on train openings; its route/review decision at default thresholds (confidence 0.75, margin 0.2):
+
+| split/condition | route rate | accuracy on routed | routed | calls |
+|---|---|---|---|---|
+| dev/reference | 0.033 | 1.000 | 5 | 150 |
+| dev/asr | 0.027 | 1.000 | 4 | 150 |
+| test/reference | 0.000 | - | 0 | 150 |
+| test/asr | 0.000 | - | 0 | 150 |
 
 ## 4b. Post-hoc: rules v1.1 (after the frozen test run)
 

@@ -25,6 +25,12 @@ errors. No intent threshold reached 2% on dev, because the remaining errors are 
 intent - so the threshold sends everything to review. That is the finding: the next signal
 has to be per-field confidence, not a better intent model.
 
+**Q: How independent are your test calls?**
+Less than 150 suggests. Integrating localdesk surfaced it: its leakage guard refused a split
+because identical openings crossed it. Test has 27 distinct first utterances for 150 calls, so I
+added template-cluster bootstrap intervals; they are 2-2.5x wider. Embeddings still lead
+TF-IDF (0.80 vs 0.58 on ASR openings) but the intervals overlap, so I do not call it established.
+
 **Q: What went wrong during the evaluation?**
 The frozen rules scored contradiction F1 = 0 on ASR: the operator cue "что-нибудь еще" was
 matched literally and ASR drops the hyphen. I reproduced it on dev, fixed it there (v1.1) and

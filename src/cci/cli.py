@@ -6,6 +6,7 @@ cci paraphrase  --split test                         LLM-paraphrased client turn
 cci eval-asr    --split test --condition clean        WER/CER/RTF for all backends + diarization
 cci transcribe  --split dev|test                      cache GigaAM transcripts + roles for NLP eval
 cci eval-nlp                                          intent / extraction / selective automation
+cci eval-intent [--no-llm]                            first-utterance intent incl. localdesk, cluster CIs
 cci eval-rules                                        rules extractor (current version) on dev + test, post-hoc
 cci eval-rag                                          retrieval + closed-book vs grounded answers
 cci train-intent                                      train + register in MLflow (quality gate)
@@ -19,6 +20,7 @@ import argparse
 import json
 import os
 import sys
+import time
 import zlib
 from pathlib import Path
 
@@ -274,6 +276,66 @@ def cmd_eval_nlp(a) -> None:
     )
 
 
+def cmd_eval_intent(a) -> None:
+    """Early-routing intent with template-cluster bootstrap CIs, including localdesk.
+
+    Calls share opening templates (test: 27 distinct reference openings for 150 calls), so CIs
+    that resample calls are too narrow; this command adds CIs that resample templates. Models
+    are fitted on train openings only; localdesk calibrates on a train slice and reports on dev;
+    thresholds are localdesk's defaults, fixed before looking at test.
+    """
+    from cci.eval.nlp_eval import intent_scores
+    from cci.nlp.intent import EmbeddingIntent, LLMIntent, TfidfIntent
+    from cci.nlp.localdesk_intent import LocaldeskIntent
+
+    train, dev, test = _items("train"), _items("dev"), _items("test")
+    X, y = [it["text_reference:opening"] for it in train], [it["label"]["intent"] for it in train]
+    Xd, yd = [it["text_reference:opening"] for it in dev], [it["label"]["intent"] for it in dev]
+    t0 = time.perf_counter()
+    ld = LocaldeskIntent(workdir=DATA.parent / "storage" / "localdesk").fit(X, y, Xd, yd)
+    ld_fit_s = time.perf_counter() - t0
+    models = {"tfidf_lr": TfidfIntent().fit(X, y), "localdesk": ld}
+    if not a.no_llm:
+        models["embedding_lr"] = EmbeddingIntent(_embedder()).fit(X, y)
+    sub = test[:60]
+    res: dict = {"distinct_openings": {}, "models": {}, "localdesk": {"fit_s": ld_fit_s, "run": ld.report}}
+    for split, items in (("dev", dev), ("test", test), ("test_subset60", sub)):
+        res["distinct_openings"][split] = len({it["text_reference:opening"] for it in items})
+    conds = [("reference", test), ("asr", test), ("paraphrase", sub)]
+    for name, m in models.items():
+        for cond, items in conds:
+            if not all(f"text_{cond}:opening" in it for it in items):
+                continue
+            texts = [it[f"text_{cond}:opening"] for it in items]
+            gold = [it["label"]["intent"] for it in items]
+            groups = [it["text_reference:opening"] for it in items]
+            pred, _ = m.predict_proba(texts)
+            res["models"][f"{name}/{cond}"] = intent_scores(gold, pred, groups)
+    if not a.no_llm:
+        llm = LLMIntent(_llm())
+        for cond in ("reference", "asr", "paraphrase"):
+            texts = [it[f"text_{cond}:opening"] for it in sub]
+            gold = [it["label"]["intent"] for it in sub]
+            pred, _ = llm.predict_proba(texts)
+            res["models"][f"llm_zero_shot[subset]/{cond}"] = intent_scores(
+                gold, pred, [it["text_reference:opening"] for it in sub]
+            )
+    sel = {}
+    for split, items in (("dev", dev), ("test", test)):
+        for cond in ("reference", "asr"):
+            dec = ld.decide([it[f"text_{cond}:opening"] for it in items])
+            gold = [it["label"]["intent"] for it in items]
+            routed = [d["category"] == g for d, g in zip(dec, gold, strict=True) if d["action"] == "route"]
+            sel[f"{split}/{cond}"] = {
+                "route_rate": len(routed) / len(items),
+                "accuracy_on_routed": (sum(routed) / len(routed)) if routed else None,
+                "routed": len(routed),
+                "n": len(items),
+            }
+    res["localdesk"]["selective_default_thresholds"] = sel
+    _write("intent_openings", res)
+
+
 def cmd_eval_rules(a) -> None:
     """Re-score the current rules version without the LLM. Written to a separate file: rules
     changes made after the frozen test run are post-hoc and reported as such."""
@@ -391,6 +453,9 @@ def main(argv: list[str] | None = None) -> int:
     n.add_argument("--llm-limit", type=int, default=60)
     n.set_defaults(fn=cmd_eval_nlp)
     sub.add_parser("eval-rules").set_defaults(fn=cmd_eval_rules)
+    ei = sub.add_parser("eval-intent")
+    ei.add_argument("--no-llm", action="store_true")
+    ei.set_defaults(fn=cmd_eval_intent)
     r = sub.add_parser("eval-rag")
     r.add_argument("--no-llm", action="store_true")
     r.add_argument("--no-embed", action="store_true")

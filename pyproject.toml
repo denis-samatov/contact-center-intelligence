@@ -30,6 +30,7 @@ dependencies = [
   "pgvector>=0.3",
   "mlflow>=3.0",
   "matplotlib>=3.8",
+  "localdesk>=0.3.1,<0.4",  # calibrated, abstaining intent classifier (github.com/denis-samatov/localdesk)
 ]
 
 [project.optional-dependencies]

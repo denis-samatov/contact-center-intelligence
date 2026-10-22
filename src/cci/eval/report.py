@@ -116,7 +116,8 @@ def build_report(results: Path) -> Path:
         md += [
             "## 2. Intent classification (test split, family-disjoint templates)",
             "",
-            "Conditions: `reference` = gold transcript; `asr` = GigaAM-v2 + diarization on telephony audio; "
+            "Intervals in this section resample calls; calls share opening templates, so see 4a for template-cluster "
+            "intervals. Conditions: `reference` = gold transcript; `asr` = GigaAM-v2 + diarization on telephony audio; "
             "`paraphrase` = LLM-rewritten client turns (facts verified).",
             "",
         ]
@@ -211,6 +212,59 @@ def build_report(results: Path) -> Path:
         md += [
             f"Paraphrase set: {para['accepted']} of {para['client_turns']} client turns rewritten "
             f"(acceptance {para['acceptance_rate']:.2f}); rejections: {para['rejection_reasons']}.",
+            "",
+        ]
+    io = load("intent_openings")
+    if io:
+        d = io["distinct_openings"]
+        md += [
+            "## 4a. Early-routing intent revisited: template-cluster CIs and localdesk",
+            "",
+            f"Calls share opening templates: {d['test']} distinct reference openings among the 150 test calls "
+            f"({d['dev']} on dev). Section 2's intervals resample calls and are therefore too narrow; the "
+            "intervals below resample whole templates. Point estimates are unchanged.",
+            "",
+        ]
+        rows = []
+        for k, v in io["models"].items():
+            name, cond = k.split("/")
+            rows.append(
+                [
+                    name,
+                    cond,
+                    v["accuracy"],
+                    _ci(v["accuracy_ci95"]),
+                    _ci(v["accuracy_ci95_cluster"]),
+                    v["macro_f1"],
+                    _ci(v["macro_f1_ci95_cluster"]),
+                    v["groups"],
+                    v["n"],
+                ]
+            )
+        md += [
+            _t(
+                [
+                    "model",
+                    "condition",
+                    "accuracy",
+                    "CI (calls)",
+                    "CI (templates)",
+                    "macro-F1",
+                    "CI (templates)",
+                    "templates",
+                    "calls",
+                ],
+                rows,
+            ),
+            "",
+        ]
+        sel = io["localdesk"]["selective_default_thresholds"]
+        rows = [[k, v["route_rate"], v["accuracy_on_routed"], v["routed"], v["n"]] for k, v in sel.items()]
+        md += [
+            "localdesk (PyPI 0.3.1) trained through its own pipeline (calibration split, gates, registry) on train "
+            "openings; its route/review decision at default thresholds (confidence 0.75, margin 0.2):",
+            "",
+            _t(["split/condition", "route rate", "accuracy on routed", "routed", "calls"], rows),
             "",
         ]
     post = load("rules_v1_1")

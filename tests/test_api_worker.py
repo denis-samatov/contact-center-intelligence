@@ -168,3 +168,22 @@ def test_rate_limit_returns_429_per_key_and_exempts_probes(tmp_path):
     assert r.status_code == 429 and int(r.headers["Retry-After"]) >= 1
     assert c.get("/v1/calls", headers={"X-API-Key": "guess"}).status_code == 401  # separate bucket
     assert all(c.get("/health/live").status_code == 200 for _ in range(5))
+
+
+def test_dashboard_separates_operations_from_offline_quality(tmp_path):
+    import json as _json
+
+    res = tmp_path / "results"
+    res.mkdir()
+    (res / "rag.json").write_text(
+        _json.dumps({"grounded_fully_correct": 0.8, "closed_book_fully_correct": 0.05, "citation_precision": 0.9})
+    )
+    s = Settings(
+        database_url=f"sqlite:///{tmp_path}/t.db", storage_dir=tmp_path / "st", api_key="secret-key", results_dir=res
+    )
+    c = TestClient(create_app(s))
+    d = c.get("/v1/dashboard", headers={"X-API-Key": "secret-key"}).json()
+    assert d["operations"]["calls_by_status"] == {} and d["operations"]["processing_s"]["n"] == 0
+    assert {r["metric"]: r["value"] for r in d["offline_quality"]}["fully correct, grounded"] == 0.8
+    assert all(r["source"] == "results/rag.json" for r in d["offline_quality"])  # missing files are skipped
+    assert c.get("/v1/dashboard").status_code == 401

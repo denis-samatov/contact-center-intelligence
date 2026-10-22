@@ -40,6 +40,14 @@ Fixed before the reported runs (corpus seed 20261023).
 * No retrieval vs grounded generation on the same questions and model.
 * Automate-all vs review-on-missing/contradiction vs + confidence threshold.
 
+## Independence of observations
+Calls generated from the same template are not independent. The test split has 27 distinct
+first utterances for 150 calls (dev 27, train 54). Early-routing intent is therefore reported
+with template-cluster bootstrap CIs (`cci eval-intent`, `results/intent_openings.json`); the
+call-level intervals of `results/nlp.json` are kept for continuity but are too narrow. Field
+extraction is less affected (values such as numbers, dates and addresses are drawn per call),
+but phrasings still repeat, so its intervals should also be read as optimistic.
+
 ## What this can and cannot show
 It compares methods under identical, controlled conditions and validates the pipeline end to
 end. It cannot estimate accuracy on real customer calls (spontaneous speech, overlaps,

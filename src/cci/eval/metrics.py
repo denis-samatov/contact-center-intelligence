@@ -106,6 +106,23 @@ def bootstrap_ci(values: list[float], n: int = 2000, seed: int = 0, stat=None) -
     return stats[int(0.025 * n)], stats[int(0.975 * n) - 1]
 
 
+def cluster_bootstrap_ci(groups: list[str], stat, n: int = 2000, seed: int = 0) -> tuple[float, float]:
+    """95% percentile bootstrap that resamples whole groups (e.g. all calls sharing one opening
+    template). Calls in a group are not independent; resampling calls would understate the
+    uncertainty when there are few distinct groups."""
+    rng = random.Random(seed)
+    members: dict[str, list[int]] = {}
+    for i, g in enumerate(groups):
+        members.setdefault(g, []).append(i)
+    keys = sorted(members)
+    stats = []
+    for _ in range(n):
+        idx = [i for _ in keys for i in members[keys[rng.randrange(len(keys))]]]
+        stats.append(stat(idx))
+    stats.sort()
+    return stats[int(0.025 * n)], stats[int(0.975 * n) - 1]
+
+
 # --------------------------------------------------------------------------- ASR
 def asr_normalize(text: str) -> str:
     """Lowercase, ё->е, digits for number words (both sides), no punctuation.
