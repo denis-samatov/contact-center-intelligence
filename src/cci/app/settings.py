@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     api_key: SecretStr | None = None  # required unless allow_anonymous_local
     allow_anonymous_local: bool = False
     max_upload_mb: int = Field(50, ge=1, le=500)
+    rate_limit_per_min: int = Field(120, ge=1)  # per API key (or client address without a key)
     asr_backend: str = "gigaam-v2"
     diarize: bool = True
     num_threads: int = Field(4, ge=1)

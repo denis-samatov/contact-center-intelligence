@@ -154,3 +154,17 @@ def test_health_and_metrics(env):
     assert c.get("/health/ready").status_code == 200
     assert "cci_jobs_queued" in c.get("/metrics").text
     assert c.post("/v1/kb/answer", headers=H, json={"question": "Какая франшиза?"}).status_code == 503
+
+
+def test_rate_limit_returns_429_per_key_and_exempts_probes(tmp_path):
+    from cci.app.ratelimit import TokenBucketLimiter
+
+    s = Settings(database_url=f"sqlite:///{tmp_path}/t.db", storage_dir=tmp_path / "st", api_key="secret-key")
+    frozen = TokenBucketLimiter(per_minute=2, clock=lambda: 0.0)
+    c = TestClient(create_app(s, limiter=frozen))
+    h = {"X-API-Key": "secret-key"}
+    assert [c.get("/v1/calls", headers=h).status_code for _ in range(2)] == [200, 200]
+    r = c.get("/v1/calls", headers=h)
+    assert r.status_code == 429 and int(r.headers["Retry-After"]) >= 1
+    assert c.get("/v1/calls", headers={"X-API-Key": "guess"}).status_code == 401  # separate bucket
+    assert all(c.get("/health/live").status_code == 200 for _ in range(5))

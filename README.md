@@ -105,6 +105,7 @@ the rulebook is fictional, so it measures how often the model answers without kn
 | Function | Code |
 |---|---|
 | Upload with declared provenance; SHA-256 dedup; durable job | `src/cci/app/api.py`, `app/db.py` |
+| Per-key rate limiting (429 + `Retry-After`), health/metrics exempt | `src/cci/app/ratelimit.py` |
 | VAD, ASR with timestamps, diarization, roles | `src/cci/speech/` |
 | Russian numeral normalization (words <-> digits, dictated groups) | `src/cci/domain/ru_numbers.py` |
 | Intent: TF-IDF / embeddings / LLM zero-shot | `src/cci/nlp/intent.py` |
@@ -133,4 +134,4 @@ TTS voices were selected by dataset license ([ADR-B3](docs/adr/ADR-B3-tts-voice-
   environment). One local 1.7B LLM; larger models not evaluated.
 
 [PRD](docs/PRD.md) · [Architecture](docs/ARCHITECTURE.md) · [Business case](docs/BUSINESS_CASE.md) ·
-[Evaluation protocol](docs/EVALUATION.md) · [Interview notes](docs/INTERVIEW.md) · [ADRs](docs/adr/) · [Demo script](docs/DEMO.md)
+[Evaluation protocol](docs/EVALUATION.md) · [Interview notes](docs/INTERVIEW.md) · [ADRs](docs/adr/) · [Demo and video script](docs/DEMO.md) · [Runbook](docs/RUNBOOK.md)

@@ -14,11 +14,12 @@ import time
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from cci.app.db import CallRow, CaseRow, JobRow, ReviewRow, SegmentRow, db_ready, init_db, make_engine
+from cci.app.ratelimit import EXEMPT_PREFIXES, TokenBucketLimiter, client_id, retry_after
 from cci.app.settings import ALLOWED_PROVENANCE, Settings
 
 UI = Path(__file__).with_name("ui.html")
@@ -60,8 +61,9 @@ class Question(BaseModel):
     question: str = Field(min_length=3, max_length=500)
 
 
-def create_app(settings: Settings | None = None, answerer=None) -> FastAPI:
+def create_app(settings: Settings | None = None, answerer=None, limiter: TokenBucketLimiter | None = None) -> FastAPI:
     s = settings or Settings()
+    limiter = limiter or TokenBucketLimiter(s.rate_limit_per_min)
     engine = make_engine(s.database_url)
     Session = init_db(engine)
     s.storage_dir.mkdir(parents=True, exist_ok=True)
@@ -75,6 +77,18 @@ def create_app(settings: Settings | None = None, answerer=None) -> FastAPI:
         route = request.scope.get("route")
         metrics.observe(getattr(route, "path", "unmatched"), response.status_code, time.perf_counter() - t0)
         return response
+
+    @app.middleware("http")
+    async def _rate_limit(request: Request, call_next):
+        if request.url.path.startswith(EXEMPT_PREFIXES):
+            return await call_next(request)
+        host = request.client.host if request.client else None
+        wait = limiter.take(client_id(request.headers.get("x-api-key"), host))
+        if wait:
+            return JSONResponse(
+                {"detail": "rate limit exceeded"}, status_code=429, headers={"Retry-After": retry_after(wait)}
+            )
+        return await call_next(request)
 
     def auth(request: Request) -> str:
         key = request.headers.get("x-api-key", "")
