@@ -24,6 +24,8 @@ CCI_API_KEY=demo CCI_INTENT_MODEL_URI=models/intent/intent.joblib cci serve & cc
 ```
 Open `http://127.0.0.1:8090`, paste the key, upload a WAV with provenance `synthetic`.
 
+![Case card for a synthetic call: ASR transcript with timestamps and roles, extracted fields, a detected contradiction, protocol and a reply draft with sources](docs/img/case.png)
+
 ## Measured results (CPU, synthetic speech)
 
 Full report with CIs: [results/REPORT.md](results/REPORT.md). Protocol: [docs/EVALUATION.md](docs/EVALUATION.md).
