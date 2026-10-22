@@ -24,6 +24,12 @@ CCI_API_KEY=demo CCI_INTENT_MODEL_URI=models/intent/intent.joblib cci serve & cc
 ```
 Open `http://127.0.0.1:8090`, paste the key, upload a WAV with provenance `synthetic`.
 
+Containers: `CCI_API_KEY=... docker compose up` (behind a TLS-intercepting proxy add
+`--secret id=pip_ca,src=ca.pem` to the image build). Verified here: `db` (pgvector/Postgres 17)
++ `api` + `worker` - upload, queue, ASR, case with a detected contradiction, 401 on a wrong
+key, read-only root FS, non-root user. The `llm`/`embed` llama.cpp images were **not** built in
+this environment (Debian package mirror unreachable); the same servers ran natively.
+
 ![Case card for a synthetic call: ASR transcript with timestamps and roles, extracted fields, a detected contradiction, protocol and a reply draft with sources](docs/img/case.png)
 
 ## Measured results (CPU, synthetic speech)
