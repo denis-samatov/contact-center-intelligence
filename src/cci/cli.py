@@ -86,7 +86,8 @@ def cmd_paraphrase(a) -> None:
     from cci.synth.paraphrase import paraphrase_calls
 
     calls = _calls(a.split)[: a.limit]
-    res = paraphrase_calls(calls, _llm())
+    # 0.6: below the 5th percentile of similarities observed on 6 dev calls; catches garbage only.
+    res = paraphrase_calls(calls, _llm(), embed=_embedder(), min_similarity=0.6)
     path = DATA / "corpus" / f"paraphrase-{a.split}.jsonl"
     path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in res["calls"]), encoding="utf-8")
     _write(f"paraphrase_{a.split}", {k: v for k, v in res.items() if k != "calls"})
@@ -117,14 +118,63 @@ def cmd_transcribe(a) -> None:
         rows.append(
             {
                 "call_id": c["call_id"],
+                # role, text, speaker cluster, start, end: speakers are kept so that role assignment
+                # can be re-derived without re-running ASR and diarization.
                 "turns": [
-                    [roles.get(s, "client"), seg.text] for seg, s in zip(asr.segments, spk, strict=True) if seg.text
+                    [roles.get(s, "client"), seg.text, s, seg.start, seg.end]
+                    for seg, s in zip(asr.segments, spk, strict=True)
+                    if seg.text
                 ],
             }
         )
     path = DATA / "corpus" / f"asr-{a.split}-{a.condition}.jsonl"
     path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
     print(f"wrote {path} ({len(rows)} calls)")
+
+
+def _role_accuracy(turns: list, ref: dict, roles: list[str]) -> float:
+    correct = total = 0.0
+    for t, role in zip(turns, roles, strict=True):
+        for rs in ref["segments"]:
+            ov = max(0.0, min(t[4], rs["end"]) - max(t[3], rs["start"]))
+            total += ov
+            correct += ov if role == rs["speaker"] else 0.0
+    return correct / total if total else 0.0
+
+
+def cmd_roles(a) -> None:
+    """Compare script-cue role heuristics with the trained role model on cached transcripts;
+    with --apply, rewrite the cached roles using the model (develop on dev, apply to test)."""
+    from cci.speech.diarization import RoleModel, assign_roles_model
+
+    train = _calls("train")
+    model = RoleModel().fit(
+        [t["text"] for c in train for t in c["turns"]], [t["speaker"] for c in train for t in c["turns"]]
+    )
+    path = DATA / "corpus" / f"asr-{a.split}-{a.condition}.jsonl"
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    old, new = [], []
+    for r in rows:
+        ref = json.loads((AUDIO / a.split / a.condition / f"{r['call_id']}.ref.json").read_text(encoding="utf-8"))
+        turns = r["turns"]
+        roles = assign_roles_model([t[1] for t in turns], [t[2] for t in turns], model, mode=a.mode)
+        old.append(_role_accuracy(turns, ref, [t[0] for t in turns]))
+        new.append(_role_accuracy(turns, ref, roles))
+        if a.apply:
+            for t, role in zip(turns, roles, strict=True):
+                t[0] = role
+    res = {
+        "split": a.split,
+        "calls": len(rows),
+        "heuristic": {"mean": sum(old) / len(old), "below_0.9": sum(x < 0.9 for x in old)},
+        "role_model": {"mean": sum(new) / len(new), "below_0.9": sum(x < 0.9 for x in new)},
+        "applied": a.apply,
+        "mode": a.mode,
+    }
+    print(json.dumps(res, indent=1))
+    if a.apply:
+        path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8")
+    _write(f"roles_{a.split}", res)
 
 
 def _items(split: str, limit: int | None = None, condition: str = "telephony") -> list[dict]:
@@ -148,7 +198,7 @@ def _items(split: str, limit: int | None = None, condition: str = "telephony") -
             "text_reference": " ".join(t for _, t in ref_turns),
         }
         if c["call_id"] in asr:
-            it["turns_asr"] = [tuple(x) for x in asr[c["call_id"]]]
+            it["turns_asr"] = [(x[0], x[1]) for x in asr[c["call_id"]]]
             it["text_asr"] = " ".join(t for _, t in it["turns_asr"])
         if c["call_id"] in para:
             it["turns_paraphrase"] = [tuple(x) for x in para[c["call_id"]]]
@@ -247,6 +297,15 @@ def cmd_train_intent(a) -> None:
         "models:/cci-intent@champion", os.environ.get("CCI_MLFLOW_TRACKING_URI", "sqlite:///mlflow.db")
     )
     save_local(model, MODELS / "intent" / "intent.joblib")
+    import joblib
+
+    from cci.speech.diarization import RoleModel
+
+    train = _calls("train")
+    roles = RoleModel().fit(
+        [t["text"] for c in train for t in c["turns"]], [t["speaker"] for c in train for t in c["turns"]]
+    )
+    joblib.dump(roles, MODELS / "intent" / "roles.joblib")
     print(f"exported {version} to {MODELS / 'intent' / 'intent.joblib'}")
 
 
@@ -315,6 +374,12 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--no-llm", action="store_true")
     r.add_argument("--no-embed", action="store_true")
     r.set_defaults(fn=cmd_eval_rag)
+    ro = sub.add_parser("roles")
+    ro.add_argument("--split", default="dev")
+    ro.add_argument("--condition", default="telephony")
+    ro.add_argument("--apply", action="store_true")
+    ro.add_argument("--mode", default="text", choices=["text", "cluster", "hybrid"])
+    ro.set_defaults(fn=cmd_roles)
     sub.add_parser("train-intent").set_defaults(fn=cmd_train_intent)
     sv = sub.add_parser("serve")
     sv.add_argument("--host", default="127.0.0.1")

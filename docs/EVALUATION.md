@@ -9,8 +9,15 @@ Fixed before the reported runs (corpus seed 20261023).
   phrasings are deliberately indirect ("my car is in the service after what happened").
 * Audio: CC0 Piper voices (operator `dmitri`, client `denis`), 16 kHz. Conditions:
   `clean`; `telephony` (8 kHz band-limit + mu-law); `noisy` (telephony + noise at 10 dB SNR).
-* Paraphrase set: client turns of the first 60 test calls rewritten by Qwen3-1.7B; a rewrite
-  is kept only if numbers (parsed), named places/streets and key cue words are preserved.
+* Paraphrase set: client turns of the first 60 test calls rewritten by Qwen3-1.7B
+  (temperature 0.7, two few-shot pairs as separate chat turns); a rewrite is kept only if
+  numbers (parsed), named places/streets and key cue words are preserved, it differs from
+  the input, it does not copy a few-shot answer, and its embedding cosine to the original is
+  >= 0.6 (garbage gate, below the 5th percentile seen on dev). The prompt was debugged on dev
+  calls only: the first version (instruction-only, temperature 0) kept 7% of test turns,
+  251 of 263 rejections being "unchanged or too long" (not broken down at the time); with examples inlined in the prompt the model copied
+  the example verbatim, and one such copy passed the fact checks - hence the copy check.
+  Rejected turns keep the original text; acceptance statistics are in `results/paraphrase_test.json`.
 
 ## Tasks and metrics
 | task | input | metric | notes |

@@ -1,0 +1,898 @@
+{
+ "suite": "rag",
+ "manifest": {
+  "created_utc": "2026-10-22T14:47:00+00:00",
+  "python": "3.12.3",
+  "platform": "Linux-6.18.44-fc-v140-x86_64-with-glibc2.39",
+  "packages": {
+   "sherpa-onnx": "1.13.8",
+   "scikit-learn": "1.9.1",
+   "numpy": "2.5.4",
+   "pymorphy3": "2.0.6",
+   "mlflow": "3.17.2",
+   "fastapi": "0.159.1",
+   "sqlalchemy": "2.1.6",
+   "httpx": "0.28.1"
+  },
+  "git_commit": "1386f812b447c172383229a43e402444c1a14490",
+  "command": [
+   "/home/user/portfolio/contact-center-intelligence/.venv/bin/cci",
+   "eval-rag"
+  ]
+ },
+ "chunks": 30,
+ "questions": 40,
+ "index_build_s": 7.3368101820015,
+ "retrieval_recall": {
+  "bm25@1": 0.9,
+  "bm25@3": 0.975,
+  "bm25@5": 0.975,
+  "dense@1": 0.975,
+  "dense@3": 1.0,
+  "dense@5": 1.0,
+  "hybrid@1": 0.9,
+  "hybrid@3": 1.0,
+  "hybrid@5": 1.0
+ },
+ "answer_retrieval_mode": "hybrid",
+ "closed_book_fact_recall": 0.09583333333333334,
+ "grounded_fact_recall": 0.8125,
+ "grounded_fully_correct": 0.8,
+ "closed_book_fully_correct": 0.05,
+ "verified_grounded_rate": 0.85,
+ "citation_precision": 0.9,
+ "fully_correct_when_verified": 0.8823529411764706,
+ "llm_usage": {
+  "calls": 82,
+  "prompt_tokens": 18588,
+  "completion_tokens": 3956,
+  "seconds": 365.99773676000405,
+  "p50_latency_s": 3.709667121998791
+ },
+ "rows": [
+  {
+   "id": "q01",
+   "question": "В какой срок нужно сообщить о страховом случае по КАСКО?",
+   "closed_book": "Срок сообщения о страховом случае по КАСКО — 3 дня с даты получения события.",
+   "grounded": "Не позднее трех рабочих дней с момента происшествия",
+   "citations": [
+    "kasko_claims#1"
+   ],
+   "retrieved": [
+    "kasko_claims#1",
+    "property_claims#1",
+    "kasko_claims#4"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q02",
+   "question": "Какие документы нужны для заявления по КАСКО?",
+   "closed_book": "Для заявления по КАСКО необходимы: документы удостоверяющие личность, паспорт, справка о доходах, документы на автомобиль, копия договора с автосервисом, копия чека на оплату страхового взноса.",
+   "grounded": "паспорт, полис, водительское удостоверение, свидетельство о регистрации автомобиля и, если вызывали полицию, справка о происшествии",
+   "citations": [
+    "kasko_claims#2"
+   ],
+   "retrieved": [
+    "kasko_claims#2",
+    "osago_claims#2",
+    "kasko_claims#4"
+   ],
+   "closed_fact_recall": 0.3333333333333333,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q03",
+   "question": "Когда проводится осмотр автомобиля по КАСКО?",
+   "closed_book": "ОСМОР АВТОМАВА ПО КАСКО проводится в периоды, когда клиент возвращает автомобиль в страховую компанию. Время проведения зависит от политики страховой компании, но обычно оно проводится в течение 10-15 дней после возврата автомобиля.",
+   "grounded": "Осмотр автомобиля проводится в течение пяти рабочих дней после заявления.",
+   "citations": [
+    "kasko_claims#3"
+   ],
+   "retrieved": [
+    "kasko_claims#3",
+    "kasko_claims#2",
+    "kasko_claims#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q04",
+   "question": "За сколько дней принимается решение по убытку КАСКО?",
+   "closed_book": "В течение 10 дней после получения заявки.",
+   "grounded": "20",
+   "citations": [
+    "kasko_claims#4"
+   ],
+   "retrieved": [
+    "kasko_claims#4",
+    "kasko_claims#1",
+    "osago_claims#4"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 0.0,
+   "verified_grounded": false,
+   "valid_citations": true,
+   "unsupported_numbers": [
+    "20"
+   ],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q05",
+   "question": "Какая франшиза по тарифу Стандарт в КАСКО?",
+   "closed_book": "Франшиза по тарифу Стандарт в КАСКО составляет 100 российских рублей.",
+   "grounded": "15000 р.",
+   "citations": [
+    "kasko_claims#5"
+   ],
+   "retrieved": [
+    "kasko_claims#5",
+    "travel#2",
+    "kasko_claims#2"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q06",
+   "question": "Есть ли франшиза у тарифа Премиум по КАСКО?",
+   "closed_book": "Нет, у тарифа Премиум по КАСКО нет франшизы.",
+   "grounded": "нет информации",
+   "citations": [],
+   "retrieved": [
+    "kasko_claims#5",
+    "travel#2",
+    "kasko_claims#2"
+   ],
+   "closed_fact_recall": 1.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 0.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q07",
+   "question": "В течение какого времени подается заявление по ОСАГО?",
+   "closed_book": "Минимум 10 дней с даты страхования",
+   "grounded": "Не позднее пяти рабочих дней после дорожно-транспортного происшествия",
+   "citations": [
+    "osago_claims#1"
+   ],
+   "retrieved": [
+    "osago_claims#1",
+    "osago_claims#4",
+    "osago_claims#2"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q08",
+   "question": "Какие документы нужны по ОСАГО?",
+   "closed_book": "Для оформления ОСАГО необходимы следующие документы: паспорт, документы на автомобиль (договор о найме, технический паспорт), чек на оплату страхового взноса, документы на жительство или иной документ, подтверждающий право на владение автомобилем, и документы на страховую компанию.",
+   "grounded": "Паспорт, водительское удостоверение, документы на автомобиль, извещение о происшествии (при вызове полиции также протокол или постановление)",
+   "citations": [
+    "osago_claims#2"
+   ],
+   "retrieved": [
+    "osago_claims#2",
+    "osago_claims#4",
+    "osago_claims#1"
+   ],
+   "closed_fact_recall": 0.5,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q09",
+   "question": "Что происходит, если в ДТП есть пострадавшие?",
+   "closed_book": "Если в ДТП есть пострадавшие, то необходимо: 1) вызвать скорую помощь, 2) собрать информацию у пострадавших, 3) сообщить о ДТП в полицию, 4) заполнить форму ДТП и оформить справку о ДТП.",
+   "grounded": "Если в ДТП есть пострадавшие, обращение обрабатывается в приоритетной очереди, и клиенту в течение одного рабочего дня перезванивает куратор.",
+   "citations": [
+    "osago_claims#3"
+   ],
+   "retrieved": [
+    "osago_claims#3",
+    "property_claims#2",
+    "service#2"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q10",
+   "question": "Сколько дней принимается решение по ОСАГО?",
+   "closed_book": "В соответствии с законодательством РФ, решение по ОСАГО принимается в течение 10 дней с даты подачи заявления.",
+   "grounded": "20",
+   "citations": [
+    "osago_claims#4"
+   ],
+   "retrieved": [
+    "osago_claims#4",
+    "osago_claims#1",
+    "kasko_claims#4"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 0.0,
+   "verified_grounded": false,
+   "valid_citations": true,
+   "unsupported_numbers": [
+    "20"
+   ],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q11",
+   "question": "Когда нужно сообщить о заливе квартиры?",
+   "closed_book": "Нужно сообщить о заливе квартиры, когда в квартире была произведена продажа или ипотека, а также когда в квартире была проведена реконструкция или капитальный ремонт.",
+   "grounded": "Не позднее трех календарных дней с момента обнаружения",
+   "citations": [
+    "property_claims#1"
+   ],
+   "retrieved": [
+    "property_claims#1",
+    "property_claims#2",
+    "property_claims#4"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q12",
+   "question": "Какие документы нужны при заливе квартиры?",
+   "closed_book": null,
+   "grounded": "Акт управляющей компании о причинах залива, фотографии повреждений",
+   "citations": [
+    "property_claims#2"
+   ],
+   "retrieved": [
+    "property_claims#2",
+    "property_claims#3",
+    "property_claims#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q13",
+   "question": "Какой документ нужен при пожаре в квартире?",
+   "closed_book": null,
+   "grounded": "Справка пожарной службы",
+   "citations": [
+    "property_claims#3"
+   ],
+   "retrieved": [
+    "property_claims#3",
+    "property_claims#2",
+    "property_claims#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q14",
+   "question": "Что нужно при краже из квартиры?",
+   "closed_book": "При краже из квартиры нужно немедленно сообщить о случении в полицию, собрать доказательства, запишите показания свидетелей и уберите все оставшиеся вещи в безопасное место.",
+   "grounded": "Нужен талон-уведомление полиции о принятии заявления",
+   "citations": [
+    "property_claims#3"
+   ],
+   "retrieved": [
+    "property_claims#1",
+    "property_claims#3",
+    "property_claims#2"
+   ],
+   "closed_fact_recall": 0.5,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q15",
+   "question": "Когда приезжает оценщик по страхованию квартиры?",
+   "closed_book": "Оценщик по страхованию квартиры приезжает в удобное время, уточнить детали и согласовать дату с клиентом.",
+   "grounded": "В течение семи рабочих дней",
+   "citations": [
+    "property_claims#4"
+   ],
+   "retrieved": [
+    "property_claims#4",
+    "property_claims#2",
+    "property_claims#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q16",
+   "question": "Через сколько дней производится выплата по квартире после акта осмотра?",
+   "closed_book": "После акта осмотра выплата по квартире производится в течение 10 дней.",
+   "grounded": "15",
+   "citations": [
+    "property_claims#4"
+   ],
+   "retrieved": [
+    "property_claims#4",
+    "payments#3",
+    "kasko_claims#3"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 0.0,
+   "verified_grounded": false,
+   "valid_citations": true,
+   "unsupported_numbers": [
+    "15"
+   ],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q17",
+   "question": "Какие статусы бывают у убытка?",
+   "closed_book": "Статусы убытка включают: 'В процессе', 'Завершён', 'Отклонён', 'Ожидание', 'В ожидании подтверждения', 'В ожидании ответа', 'В ожидании уточнений', 'В ожидании подтверждения от страховщика'",
+   "grounded": "Заблокировано",
+   "citations": [
+    "payments#1"
+   ],
+   "retrieved": [
+    "payments#1",
+    "kasko_claims#4",
+    "property_claims#2"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 0.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q18",
+   "question": "Как быстро перечисляют деньги после решения?",
+   "closed_book": "После решения заказа деньги перечисляются в течение 1-3 часов.",
+   "grounded": "5 рабочих дней",
+   "citations": [
+    "payments#2"
+   ],
+   "retrieved": [
+    "osago_claims#4",
+    "payments#2",
+    "kasko_claims#4"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 0.5,
+   "verified_grounded": false,
+   "valid_citations": true,
+   "unsupported_numbers": [
+    "5"
+   ],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q19",
+   "question": "Сколько стоит справка о выплате и когда ее выдают?",
+   "closed_book": "Справка о выплате выдается сразу после получения выплаты и стоит 100 р.",
+   "grounded": "Справка о выплате выдается бесплатно в течение трех рабочих дней после запроса и направляется на электронную почту.",
+   "citations": [
+    "payments#3"
+   ],
+   "retrieved": [
+    "payments#3",
+    "payments#2",
+    "property_claims#4"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q20",
+   "question": "Сколько вернут, если отказаться от договора в первые две недели?",
+   "closed_book": "Вернётся 0 российских рублей",
+   "grounded": "Всю уплаченную премию",
+   "citations": [
+    "cancellation#1"
+   ],
+   "retrieved": [
+    "cancellation#1",
+    "service#4",
+    "cancellation#3"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q21",
+   "question": "Сколько удерживается при расторжении после четырнадцати дней?",
+   "closed_book": "При расторжении договора после четырнадцати дней удерживается 10% от суммы страхового возмещения.",
+   "grounded": "часть премии пропорционально неистекшему сроку за вычетом расходов на ведение дела в размере десяти процентов",
+   "citations": [
+    "cancellation#2"
+   ],
+   "retrieved": [
+    "cancellation#1",
+    "cancellation#2",
+    "cancellation#3"
+   ],
+   "closed_fact_recall": 1.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q22",
+   "question": "В какой срок возвращают премию после расторжения?",
+   "closed_book": "Премия возвращается в течение 10 дней после расторжения договора.",
+   "grounded": "В течение десяти рабочих дней после получения заявления о расторжении",
+   "citations": [
+    "cancellation#3"
+   ],
+   "retrieved": [
+    "cancellation#3",
+    "cancellation#2",
+    "cancellation#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q23",
+   "question": "Что нужно для расторжения при продаже машины?",
+   "closed_book": "Для расторжения договора при продаже машины необходимо: 1) подписание устного или письменного соглашения о расторжении, 2) предоставление документов о покупке машины, 3) оплату страхового взноса, 4) передачу машины покупателю.",
+   "grounded": "Нужна копия договора купли-продажи",
+   "citations": [
+    "cancellation#4"
+   ],
+   "retrieved": [
+    "cancellation#4",
+    "cancellation#3",
+    "cancellation#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q24",
+   "question": "Платно ли менять адрес в договоре?",
+   "closed_book": "Нет, изменить адрес в договоре не возможно платно.",
+   "grounded": "нет информации",
+   "citations": [],
+   "retrieved": [
+    "service#1",
+    "service#4",
+    "cancellation#4"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 0.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 0.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q25",
+   "question": "Что нужно, чтобы добавить водителя в полис?",
+   "closed_book": "Нужно предоставить информацию о водителе, включая имя, фамилию, номер документа, дату рождения, место приватизации, и номер автомобиля.",
+   "grounded": "Нужны паспорт и водительское удостоверение нового водителя",
+   "citations": [
+    "service#2"
+   ],
+   "retrieved": [
+    "service#2",
+    "kasko_claims#2",
+    "property_claims#2"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q26",
+   "question": "Меняется ли цена при добавлении водителя?",
+   "closed_book": "Да, цена может измениться при добавлении водителя, так как это влияет на общую стоимость полиса.",
+   "grounded": "Да, цена может измениться при добавлении водителя. При добавлении нового водителя требуется пересчет премии, и возможна доплата.",
+   "citations": [
+    "service#2: 'Добавление водителя в список допущенных к управлению требует пересчета премии; возможна доплата.'"
+   ],
+   "retrieved": [
+    "service#2",
+    "service#1",
+    "kasko_claims#5"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": false,
+   "valid_citations": false,
+   "unsupported_numbers": [],
+   "citation_precision": 0.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q27",
+   "question": "Как быстро присылают электронную копию полиса?",
+   "closed_book": "В течение 1 часа после оформления полиса.",
+   "grounded": "В течение одного рабочего дня",
+   "citations": [
+    "service#3"
+   ],
+   "retrieved": [
+    "service#3",
+    "payments#3",
+    "service#4"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q28",
+   "question": "Сколько стоит бумажный дубликат полиса?",
+   "closed_book": "Цена бумажного дубликата полиса составляет 500 рублей.",
+   "grounded": "нет информации",
+   "citations": [],
+   "retrieved": [
+    "service#3",
+    "travel#1",
+    "service#4"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 0.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 0.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q29",
+   "question": "Когда можно продлить полис?",
+   "closed_book": "Полис можно продлить в течение первого года действия, а после этого — раз в год.",
+   "grounded": "Продление полиса можно оформить за 30 дней до окончания договора.",
+   "citations": [
+    "service#4"
+   ],
+   "retrieved": [
+    "service#3",
+    "service#4",
+    "travel#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q30",
+   "question": "Какая скидка при продлении без убытков?",
+   "closed_book": "Скидка при продлении без убытков обычно составляет 10-20% в зависимости от типа полиса и условий продления.",
+   "grounded": "5%",
+   "citations": [
+    "service#4"
+   ],
+   "retrieved": [
+    "service#4",
+    "kasko_claims#4",
+    "kasko_claims#5"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q31",
+   "question": "Как регистрируется жалоба?",
+   "closed_book": "Жалоба регистрируется через специальный канал в системе, например, через телефон, онлайн-форму или электронную почту. После регистрации жалоба направляется на рассмотрение соответствующего отдела компании.",
+   "grounded": "Жалоба регистрируется оператором с присвоением номера обращения. Клиент получает номер в смс или на электронную почту.",
+   "citations": [
+    "complaints#1"
+   ],
+   "retrieved": [
+    "complaints#1",
+    "complaints#2",
+    "complaints#3"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q32",
+   "question": "В какой срок отвечают на жалобу?",
+   "closed_book": "В течение 5 рабочих дней отвечают на жалобу.",
+   "grounded": "15 рабочих дней с даты регистрации",
+   "citations": [
+    "complaints#2"
+   ],
+   "retrieved": [
+    "complaints#2",
+    "complaints#3",
+    "osago_claims#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": false,
+   "valid_citations": true,
+   "unsupported_numbers": [
+    "15"
+   ],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q33",
+   "question": "Что будет с жалобой на сумму выплаты?",
+   "closed_book": "Если клиент подаст жалобу на сумму выплаты, мы направим её на рассмотрение. Мы обратимся к соответствующему отделу для проверки и урегиментации вопроса.",
+   "grounded": "Жалоба на сумму выплаты будет передана руководителю отдела урегулирования для повторной оценки ущерба.",
+   "citations": [
+    "complaints#3"
+   ],
+   "retrieved": [
+    "complaints#3",
+    "complaints#2",
+    "complaints#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q34",
+   "question": "Что покрывает страховка для путешествий?",
+   "closed_book": "Страхование для путешествий покрывает расходы на медицинскую помощь, путешествия в случае несчастного случая, расходы на восстановление и переселение, а также другие расходы, связанные с путешествием.",
+   "grounded": "Полис для путешествий покрывает экстренную медицинскую помощь, госпитализацию и медицинскую транспортировку.",
+   "citations": [
+    "travel#1"
+   ],
+   "retrieved": [
+    "travel#1",
+    "travel#2",
+    "travel#3"
+   ],
+   "closed_fact_recall": 0.5,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q35",
+   "question": "Какая франшиза в тарифе Эконом для путешествий?",
+   "closed_book": "Франшиза в тарифе Эконом для путешествий составляет 1000 рублей.",
+   "grounded": "3000 рублей",
+   "citations": [
+    "travel#2"
+   ],
+   "retrieved": [
+    "travel#2",
+    "kasko_claims#5",
+    "travel#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q36",
+   "question": "Что делать, если случай произошел за границей?",
+   "closed_book": "Если страховой случай произошел за границей, необходимо обратиться в страховую компанию с документами, подтверждающими происшествие, и предоставить информацию о месте происшествия, включая координаты, дату и время, а также любые другие данные, которые могут помочь в расследовании.",
+   "grounded": "Сначала позвонить в сервисную компанию по номеру из полиса, а затем обращаться в клинику.",
+   "citations": [
+    "travel#3"
+   ],
+   "retrieved": [
+    "travel#3",
+    "cancellation#1",
+    "kasko_claims#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q37",
+   "question": "Можно ли выбрать станцию осмотра по КАСКО?",
+   "closed_book": "Да, клиент может выбрать станцию осмотра по КАСКО, но это зависит от настроек страховой компании и наличия такой опции в системе.",
+   "grounded": "Да",
+   "citations": [
+    "kasko_claims#3"
+   ],
+   "retrieved": [
+    "kasko_claims#3",
+    "kasko_claims#4",
+    "kasko_claims#2"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 0.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q38",
+   "question": "Какой основной способ возмещения по КАСКО?",
+   "closed_book": "Основной способ возмещения по КАСКО — это страхование аварийного ущерба, предусмотренного в полисе.",
+   "grounded": "Ремонт на станции партнера",
+   "citations": [
+    "kasko_claims#4"
+   ],
+   "retrieved": [
+    "kasko_claims#4",
+    "kasko_claims#2",
+    "kasko_claims#1"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q39",
+   "question": "Куда отправляют справку о выплате?",
+   "closed_book": "Справку о выплате отправляют в банк, где открыт счет страхователя.",
+   "grounded": "на электронную почту",
+   "citations": [
+    "payments#3"
+   ],
+   "retrieved": [
+    "payments#3",
+    "payments#2",
+    "property_claims#4"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  },
+  {
+   "id": "q40",
+   "question": "Когда вступают в силу изменения телефона в договоре?",
+   "closed_book": "Изменения телефона вступают в силу сразу после подтверждения клиента в системе.",
+   "grounded": "На следующий рабочий день",
+   "citations": [
+    "service#1"
+   ],
+   "retrieved": [
+    "service#1",
+    "service#4",
+    "service#2"
+   ],
+   "closed_fact_recall": 0.0,
+   "grounded_fact_recall": 1.0,
+   "verified_grounded": true,
+   "valid_citations": true,
+   "unsupported_numbers": [],
+   "citation_precision": 1.0,
+   "gold_retrieved": true
+  }
+ ]
+}

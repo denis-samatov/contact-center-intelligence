@@ -1,0 +1,40 @@
+{
+ "suite": "roles_dev",
+ "manifest": {
+  "created_utc": "2026-10-22T14:31:10+00:00",
+  "python": "3.12.3",
+  "platform": "Linux-6.18.44-fc-v140-x86_64-with-glibc2.39",
+  "packages": {
+   "sherpa-onnx": "1.13.8",
+   "scikit-learn": "1.9.1",
+   "numpy": "2.5.4",
+   "pymorphy3": "2.0.6",
+   "mlflow": "3.17.2",
+   "fastapi": "0.159.1",
+   "sqlalchemy": "2.1.6",
+   "httpx": "0.28.1"
+  },
+  "git_commit": "1386f812b447c172383229a43e402444c1a14490",
+  "command": [
+   "/home/user/portfolio/contact-center-intelligence/.venv/bin/cci",
+   "roles",
+   "--split",
+   "dev",
+   "--mode",
+   "text",
+   "--apply"
+  ]
+ },
+ "split": "dev",
+ "calls": 150,
+ "heuristic": {
+  "mean": 0.895556776413444,
+  "below_0.9": 31
+ },
+ "role_model": {
+  "mean": 0.9969167535095171,
+  "below_0.9": 0
+ },
+ "applied": true,
+ "mode": "text"
+}

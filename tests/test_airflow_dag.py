@@ -14,7 +14,7 @@ import pytest
 pytestmark = pytest.mark.skipif(importlib.util.find_spec("airflow") is None, reason="apache-airflow not installed")
 ROOT = Path(__file__).resolve().parents[1]
 
-SCRIPT = r'''
+SCRIPT = r"""
 import json, os, sys
 from pathlib import Path
 from cci.app.db import CallRow, CaseRow, ReviewRow, SegmentRow, init_db, make_engine
@@ -36,22 +36,32 @@ sys.path.insert(0, os.environ["DAGS"])
 from cci_nightly import cci_nightly_dag
 run = cci_nightly_dag.test(logical_date=None)
 print("STATE", run.state)
-'''
+"""
 
 
 def test_nightly_dag_runs_end_to_end(tmp_path):
-    env = {**os.environ, "T": str(tmp_path), "AIRFLOW_HOME": str(tmp_path / "airflow"),
-           "AIRFLOW__CORE__LOAD_EXAMPLES": "False", "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN": f"sqlite:///{tmp_path}/af.db",
-           "CCI_DATABASE_URL": f"sqlite:///{tmp_path}/cci.db", "CCI_BATCH_OUT": str(tmp_path / "batch"),
-           "CCI_CORPUS": str(tmp_path / "corpus" / "calls.jsonl"),
-           "CCI_MLFLOW_TRACKING_URI": f"sqlite:///{tmp_path}/mlflow.db", "DAGS": str(ROOT / "airflow" / "dags"),
-           "PYTHONPATH": str(ROOT / "src"), "MLFLOW_DISABLE_AGENT_HINT": "1",
-           "AIRFLOW__CORE__DAGS_FOLDER": str(ROOT / "airflow" / "dags")}
-    subprocess.run([sys.executable, "-m", "airflow", "db", "migrate"], env=env, check=True, capture_output=True,
-                   timeout=600)
+    env = {
+        **os.environ,
+        "T": str(tmp_path),
+        "AIRFLOW_HOME": str(tmp_path / "airflow"),
+        "AIRFLOW__CORE__LOAD_EXAMPLES": "False",
+        "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN": f"sqlite:///{tmp_path}/af.db",
+        "CCI_DATABASE_URL": f"sqlite:///{tmp_path}/cci.db",
+        "CCI_BATCH_OUT": str(tmp_path / "batch"),
+        "CCI_CORPUS": str(tmp_path / "corpus" / "calls.jsonl"),
+        "CCI_MLFLOW_TRACKING_URI": f"sqlite:///{tmp_path}/mlflow.db",
+        "DAGS": str(ROOT / "airflow" / "dags"),
+        "PYTHONPATH": str(ROOT / "src"),
+        "MLFLOW_DISABLE_AGENT_HINT": "1",
+        "AIRFLOW__CORE__DAGS_FOLDER": str(ROOT / "airflow" / "dags"),
+    }
+    subprocess.run(
+        [sys.executable, "-m", "airflow", "db", "migrate"], env=env, check=True, capture_output=True, timeout=600
+    )
     # Airflow 3 creates DAG runs only for serialized DAGs.
-    subprocess.run([sys.executable, "-m", "airflow", "dags", "reserialize"], env=env, check=True, capture_output=True,
-                   timeout=600)
+    subprocess.run(
+        [sys.executable, "-m", "airflow", "dags", "reserialize"], env=env, check=True, capture_output=True, timeout=600
+    )
     p = subprocess.run([sys.executable, "-c", SCRIPT], env=env, capture_output=True, text=True, timeout=900)
     assert "STATE success" in p.stdout, (p.stdout[-3000:], p.stderr[-5000:])
     reports = list((tmp_path / "batch").glob("report-*.json"))

@@ -1,0 +1,125 @@
+{
+ "suite": "paraphrase_test",
+ "manifest": {
+  "created_utc": "2026-10-22T15:00:31+00:00",
+  "python": "3.12.3",
+  "platform": "Linux-6.18.44-fc-v140-x86_64-with-glibc2.39",
+  "packages": {
+   "sherpa-onnx": "1.13.8",
+   "scikit-learn": "1.9.1",
+   "numpy": "2.5.4",
+   "pymorphy3": "2.0.6",
+   "mlflow": "3.17.2",
+   "fastapi": "0.159.1",
+   "sqlalchemy": "2.1.6",
+   "httpx": "0.28.1"
+  },
+  "git_commit": "1386f812b447c172383229a43e402444c1a14490",
+  "command": [
+   "/home/user/portfolio/contact-center-intelligence/.venv/bin/cci",
+   "paraphrase",
+   "--split",
+   "test",
+   "--limit",
+   "60"
+  ]
+ },
+ "client_turns": 284,
+ "accepted": 205,
+ "rejected": 79,
+ "llm_failures": 0,
+ "acceptance_rate": 0.721830985915493,
+ "rejection_reasons": {
+  "unchanged": 50,
+  "entity_or_cue_lost": 10,
+  "numbers_changed": 18,
+  "low_similarity": 1
+ },
+ "rejected_samples": [
+  {
+   "original": "Только вечером, днем я на работе.",
+   "paraphrase": "Только вечером, днем я на работе.",
+   "reason": "unchanged",
+   "similarity": 0.9999999999999998
+  },
+  {
+   "original": "Спасибо, до свидания.",
+   "paraphrase": "Спасибо, до свидания.",
+   "reason": "unchanged",
+   "similarity": 1.0000000000000002
+  },
+  {
+   "original": "Да, номер заявления восемьсот двадцать шесть восемьсот четырнадцать.",
+   "paraphrase": "Да, номер заявления восемьсот двадцать шесть восемьсот четырнадцать.",
+   "reason": "unchanged",
+   "similarity": 1.0000000000000002
+  },
+  {
+   "original": "Да, сейчас, номер девять девять три шесть четыре пять шесть три.",
+   "paraphrase": "Да, сейчас, номер девять девять три шесть четыре пять шесть три.",
+   "reason": "unchanged",
+   "similarity": 1.0
+  },
+  {
+   "original": "Лучше пришлите эсэмэс.",
+   "paraphrase": "Хорошо, я отправлю электронное письмо.",
+   "reason": "entity_or_cue_lost",
+   "similarity": 0.616151794961738
+  },
+  {
+   "original": "Справка о выплате.",
+   "paraphrase": "Справка о выплате.",
+   "reason": "unchanged",
+   "similarity": 1.0000000000000002
+  },
+  {
+   "original": "У меня каско.",
+   "paraphrase": "У меня каско.",
+   "reason": "unchanged",
+   "similarity": 1.0
+  },
+  {
+   "original": "У меня осаго.",
+   "paraphrase": "У меня осаго.",
+   "reason": "unchanged",
+   "similarity": 1.0000000000000002
+  },
+  {
+   "original": "Спасибо, до свидания.",
+   "paraphrase": "Спасибо, до свидания.",
+   "reason": "unchanged",
+   "similarity": 1.0000000000000002
+  },
+  {
+   "original": "Добрый день, я пока просто выбираю, хочу понять, чем ваша страховка лучше.",
+   "paraphrase": "Добрый день, я пока просто выбираю, хочу понять, чем ваша страховка лучше.",
+   "reason": "unchanged",
+   "similarity": 1.0
+  },
+  {
+   "original": "Спасибо, до свидания.",
+   "paraphrase": "Спасибо, до свидания.",
+   "reason": "unchanged",
+   "similarity": 1.0000000000000002
+  },
+  {
+   "original": "Добрый день, я пока просто выбираю, хочу понять, чем ваша страховка лучше.",
+   "paraphrase": "Добрый день, я пока просто выбираю, хочу понять, чем ваша страховка лучше.",
+   "reason": "unchanged",
+   "similarity": 1.0
+  }
+ ],
+ "min_similarity": 0.6,
+ "similarity_quantiles": {
+  "p5": 0.6671,
+  "p25": 0.7933,
+  "p50": 0.9176,
+  "p75": 0.9734
+ },
+ "llm_usage": {
+  "calls": 284,
+  "prompt_tokens": 128564,
+  "completion_tokens": 6687,
+  "seconds": 553.4615275770229
+ }
+}

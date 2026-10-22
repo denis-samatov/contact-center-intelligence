@@ -141,10 +141,17 @@ def main() -> None:
     intent, version = load_intent_model(s.intent_model_uri, s.mlflow_tracking_uri)
     from cci.nlp.case import ReviewPolicy
 
+    role_model = None
+    role_path = s.models_dir / "intent" / "roles.joblib"
+    if role_path.exists():
+        import joblib
+
+        role_model = joblib.load(role_path)
     proc = CallProcessor(
         Transcriber(s.asr_backend, s.models_dir, s.num_threads),
         Diarizer(s.models_dir, num_threads=s.num_threads) if s.diarize else None,
         intent,
         ReviewPolicy(min_intent_prob=s.min_intent_prob),
+        role_model=role_model,
     )
     Worker(s, proc, {"intent": version, "asr": s.asr_backend, "extractor": "rules"}).run_forever()

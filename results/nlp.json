@@ -1,7 +1,7 @@
 {
  "suite": "nlp",
  "manifest": {
-  "created_utc": "2026-10-22T12:05:43+00:00",
+  "created_utc": "2026-10-22T15:59:07+00:00",
   "python": "3.12.3",
   "platform": "Linux-6.18.44-fc-v140-x86_64-with-glibc2.39",
   "packages": {
@@ -14,16 +14,18 @@
    "sqlalchemy": "2.1.6",
    "httpx": "0.28.1"
   },
-  "git_commit": null,
+  "git_commit": "1386f812b447c172383229a43e402444c1a14490",
   "command": [
    "/home/user/portfolio/contact-center-intelligence/.venv/bin/cci",
    "eval-nlp",
-   "--no-llm"
+   "--llm-limit",
+   "60"
   ]
  },
  "test_calls": 150,
  "conditions": [
-  "reference"
+  "reference",
+  "asr"
  ],
  "intent": {
   "tfidf_lr/reference": {
@@ -38,7 +40,21 @@
     1.0
    ],
    "n": 150,
-   "seconds_per_call": 0.004336448320003304
+   "seconds_per_call": 0.005089673406667619
+  },
+  "tfidf_lr/asr": {
+   "accuracy": 1.0,
+   "accuracy_ci95": [
+    1.0,
+    1.0
+   ],
+   "macro_f1": 1.0,
+   "macro_f1_ci95": [
+    1.0,
+    1.0
+   ],
+   "n": 150,
+   "seconds_per_call": 0.004523432553348054
   },
   "tfidf_lr/reference:opening": {
    "accuracy": 0.5466666666666666,
@@ -52,7 +68,175 @@
     0.5824579341495532
    ],
    "n": 150,
-   "seconds_per_call": 0.003831143813331437
+   "seconds_per_call": 0.00358352649998172
+  },
+  "tfidf_lr/asr:opening": {
+   "accuracy": 0.58,
+   "accuracy_ci95": [
+    0.5,
+    0.6533333333333333
+   ],
+   "macro_f1": 0.5758133630612714,
+   "macro_f1_ci95": [
+    0.48546550323310306,
+    0.6424588263489678
+   ],
+   "n": 150,
+   "seconds_per_call": 0.004154006693327877
+  },
+  "tfidf_lr[subset]/reference:opening": {
+   "accuracy": 0.55,
+   "accuracy_ci95": [
+    0.43333333333333335,
+    0.6666666666666666
+   ],
+   "macro_f1": 0.5308603634690591,
+   "macro_f1_ci95": [
+    0.3934303350970018,
+    0.6240625605995552
+   ],
+   "n": 60,
+   "seconds_per_call": 0.004497127983328634
+  },
+  "tfidf_lr[subset]/asr:opening": {
+   "accuracy": 0.5833333333333334,
+   "accuracy_ci95": [
+    0.4666666666666667,
+    0.7
+   ],
+   "macro_f1": 0.5828652828652828,
+   "macro_f1_ci95": [
+    0.43276014109347444,
+    0.6897947731281064
+   ],
+   "n": 60,
+   "seconds_per_call": 0.004246913083322094
+  },
+  "tfidf_lr[subset]/paraphrase:opening": {
+   "accuracy": 0.45,
+   "accuracy_ci95": [
+    0.31666666666666665,
+    0.5666666666666667
+   ],
+   "macro_f1": 0.42559895480432114,
+   "macro_f1_ci95": [
+    0.27479473093508183,
+    0.5341090282266753
+   ],
+   "n": 60,
+   "seconds_per_call": 0.004692290816637979
+  },
+  "embedding_lr/reference:opening": {
+   "accuracy": 0.8066666666666666,
+   "accuracy_ci95": [
+    0.74,
+    0.8666666666666667
+   ],
+   "macro_f1": 0.8061591734451126,
+   "macro_f1_ci95": [
+    0.7307272963094379,
+    0.8642686159088725
+   ],
+   "n": 150,
+   "seconds_per_call": 0.0984998946666504
+  },
+  "embedding_lr/asr:opening": {
+   "accuracy": 0.8,
+   "accuracy_ci95": [
+    0.7333333333333333,
+    0.8666666666666667
+   ],
+   "macro_f1": 0.8017822086905534,
+   "macro_f1_ci95": [
+    0.7325451382058756,
+    0.8589259558186112
+   ],
+   "n": 150,
+   "seconds_per_call": 0.08242060118667723
+  },
+  "embedding_lr[subset]/reference:opening": {
+   "accuracy": 0.7666666666666667,
+   "accuracy_ci95": [
+    0.65,
+    0.8666666666666667
+   ],
+   "macro_f1": 0.7538111699102411,
+   "macro_f1_ci95": [
+    0.611949901949902,
+    0.853381340881341
+   ],
+   "n": 60,
+   "seconds_per_call": 0.09179208613331866
+  },
+  "embedding_lr[subset]/asr:opening": {
+   "accuracy": 0.8,
+   "accuracy_ci95": [
+    0.7,
+    0.9
+   ],
+   "macro_f1": 0.7946090401972755,
+   "macro_f1_ci95": [
+    0.6660628019323672,
+    0.8852856045838502
+   ],
+   "n": 60,
+   "seconds_per_call": 0.0790137560833197
+  },
+  "embedding_lr[subset]/paraphrase:opening": {
+   "accuracy": 0.7166666666666667,
+   "accuracy_ci95": [
+    0.6,
+    0.8333333333333334
+   ],
+   "macro_f1": 0.6887308225543519,
+   "macro_f1_ci95": [
+    0.549667940896011,
+    0.7938572798221921
+   ],
+   "n": 60,
+   "seconds_per_call": 0.10020218623333979
+  },
+  "llm_zero_shot[subset]/reference:opening": {
+   "accuracy": 0.4666666666666667,
+   "accuracy_ci95": [
+    0.3333333333333333,
+    0.6
+   ],
+   "macro_f1": 0.4181790918633024,
+   "macro_f1_ci95": [
+    0.3367320261437909,
+    0.48804403481822833
+   ],
+   "n": 60,
+   "seconds_per_call": 1.4116830709000472
+  },
+  "llm_zero_shot[subset]/asr:opening": {
+   "accuracy": 0.43333333333333335,
+   "accuracy_ci95": [
+    0.3,
+    0.5666666666666667
+   ],
+   "macro_f1": 0.3957466825113884,
+   "macro_f1_ci95": [
+    0.2823633156966491,
+    0.4876992143658811
+   ],
+   "n": 60,
+   "seconds_per_call": 1.3887795919166819
+  },
+  "llm_zero_shot[subset]/paraphrase:opening": {
+   "accuracy": 0.5333333333333333,
+   "accuracy_ci95": [
+    0.4166666666666667,
+    0.6666666666666666
+   ],
+   "macro_f1": 0.47520568613919,
+   "macro_f1_ci95": [
+    0.36472826875125725,
+    0.5642137751786875
+   ],
+   "n": 60,
+   "seconds_per_call": 1.410719138166678
   }
  },
  "extraction": {
@@ -93,113 +277,386 @@
     "f1": 0.8333333333333334,
     "support": 60
    },
-   "seconds_per_call": 0.0001250062535109464
+   "seconds_per_call": 0.0001255921732808929
+  },
+  "rules/asr": {
+   "fields": {
+    "precision": 0.9505813953488372,
+    "recall": 0.7956204379562044,
+    "f1": 0.866225165562914,
+    "per_field_recall": {
+     "address": 1.0,
+     "amount": 1.0,
+     "cancellation_reason": 0.5909090909090909,
+     "change_type": 0.9444444444444444,
+     "claim_number": 0.9166666666666666,
+     "complaint_subject": 1.0,
+     "damage_type": 0.5294117647058824,
+     "document_type": 0.9411764705882353,
+     "incident_date": 0.8529411764705882,
+     "incident_place": 0.5,
+     "injuries": 0.4117647058823529,
+     "new_value": 0.5882352941176471,
+     "other_party": 1.0,
+     "policy_number": 0.9117647058823529,
+     "product": 0.26666666666666666,
+     "question_topic": 0.875
+    },
+    "pairs": 411
+   },
+   "contradictions": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 7
+   },
+   "preferences": {
+    "precision": 0.8333333333333334,
+    "recall": 0.8333333333333334,
+    "f1": 0.8333333333333334,
+    "support": 60
+   },
+   "seconds_per_call": 0.00010810017374751624
+  },
+  "rules[subset]/reference": {
+   "fields": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "per_field_recall": {
+     "address": 1.0,
+     "amount": 1.0,
+     "cancellation_reason": 1.0,
+     "change_type": 1.0,
+     "claim_number": 1.0,
+     "complaint_subject": 1.0,
+     "damage_type": 1.0,
+     "document_type": 1.0,
+     "incident_date": 1.0,
+     "incident_place": 1.0,
+     "injuries": 1.0,
+     "new_value": 1.0,
+     "other_party": 1.0,
+     "policy_number": 1.0,
+     "product": 1.0,
+     "question_topic": 1.0
+    },
+    "pairs": 156
+   },
+   "contradictions": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "support": 4
+   },
+   "preferences": {
+    "precision": 0.7619047619047619,
+    "recall": 0.7619047619047619,
+    "f1": 0.7619047619047619,
+    "support": 21
+   },
+   "seconds_per_call": 0.00010817784993074989
+  },
+  "rules[subset]/asr": {
+   "fields": {
+    "precision": 0.9384615384615385,
+    "recall": 0.782051282051282,
+    "f1": 0.8531468531468531,
+    "per_field_recall": {
+     "address": 1.0,
+     "amount": 1.0,
+     "cancellation_reason": 0.625,
+     "change_type": 0.875,
+     "claim_number": 0.9166666666666666,
+     "complaint_subject": 1.0,
+     "damage_type": 0.3333333333333333,
+     "document_type": 1.0,
+     "incident_date": 0.8,
+     "incident_place": 0.5,
+     "injuries": 0.5,
+     "new_value": 0.5,
+     "other_party": 1.0,
+     "policy_number": 0.9047619047619048,
+     "product": 0.26666666666666666,
+     "question_topic": 1.0
+    },
+    "pairs": 156
+   },
+   "contradictions": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 4
+   },
+   "preferences": {
+    "precision": 0.75,
+    "recall": 0.7142857142857143,
+    "f1": 0.7317073170731706,
+    "support": 21
+   },
+   "seconds_per_call": 0.00010309771672230757
+  },
+  "rules[subset]/paraphrase": {
+   "fields": {
+    "precision": 0.9864864864864865,
+    "recall": 0.9358974358974359,
+    "f1": 0.9605263157894737,
+    "per_field_recall": {
+     "address": 1.0,
+     "amount": 1.0,
+     "cancellation_reason": 0.875,
+     "change_type": 0.875,
+     "claim_number": 1.0,
+     "complaint_subject": 1.0,
+     "damage_type": 0.8333333333333334,
+     "document_type": 1.0,
+     "incident_date": 1.0,
+     "incident_place": 1.0,
+     "injuries": 0.5,
+     "new_value": 1.0,
+     "other_party": 1.0,
+     "policy_number": 1.0,
+     "product": 0.7333333333333333,
+     "question_topic": 0.8333333333333334
+    },
+    "pairs": 156
+   },
+   "contradictions": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "support": 4
+   },
+   "preferences": {
+    "precision": 0.7619047619047619,
+    "recall": 0.7619047619047619,
+    "f1": 0.7619047619047619,
+    "support": 21
+   },
+   "seconds_per_call": 0.0001022492167976452
+  },
+  "llm[subset]/reference": {
+   "fields": {
+    "precision": 0.5547445255474452,
+    "recall": 0.48717948717948717,
+    "f1": 0.5187713310580204,
+    "per_field_recall": {
+     "address": 0.0,
+     "amount": 0.0,
+     "cancellation_reason": 0.5,
+     "change_type": 1.0,
+     "claim_number": 0.08333333333333333,
+     "complaint_subject": 0.2,
+     "damage_type": 0.8333333333333334,
+     "document_type": 0.8333333333333334,
+     "incident_date": 0.6,
+     "incident_place": 1.0,
+     "injuries": 1.0,
+     "new_value": 0.375,
+     "other_party": 1.0,
+     "policy_number": 0.30952380952380953,
+     "product": 0.9333333333333333,
+     "question_topic": 0.5
+    },
+    "pairs": 156
+   },
+   "contradictions": {
+    "precision": 0.08108108108108109,
+    "recall": 0.75,
+    "f1": 0.14634146341463414,
+    "support": 4
+   },
+   "preferences": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 21
+   },
+   "seconds_per_call": 17.3396595117
+  },
+  "llm[subset]/asr": {
+   "fields": {
+    "precision": 0.45588235294117646,
+    "recall": 0.3974358974358974,
+    "f1": 0.4246575342465754,
+    "per_field_recall": {
+     "address": 0.0,
+     "amount": 0.0,
+     "cancellation_reason": 0.375,
+     "change_type": 0.875,
+     "claim_number": 0.0,
+     "complaint_subject": 0.6,
+     "damage_type": 0.16666666666666666,
+     "document_type": 0.6666666666666666,
+     "incident_date": 0.8,
+     "incident_place": 0.5,
+     "injuries": 0.75,
+     "new_value": 0.125,
+     "other_party": 0.8,
+     "policy_number": 0.2619047619047619,
+     "product": 0.7333333333333333,
+     "question_topic": 0.6666666666666666
+    },
+    "pairs": 156
+   },
+   "contradictions": {
+    "precision": 0.021739130434782608,
+    "recall": 0.25,
+    "f1": 0.04,
+    "support": 4
+   },
+   "preferences": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 21
+   },
+   "seconds_per_call": 17.506431977783297
+  },
+  "llm[subset]/paraphrase": {
+   "fields": {
+    "precision": 0.5714285714285714,
+    "recall": 0.46153846153846156,
+    "f1": 0.5106382978723405,
+    "per_field_recall": {
+     "address": 0.0,
+     "amount": 0.0,
+     "cancellation_reason": 0.5,
+     "change_type": 0.875,
+     "claim_number": 0.16666666666666666,
+     "complaint_subject": 0.2,
+     "damage_type": 0.8333333333333334,
+     "document_type": 0.6666666666666666,
+     "incident_date": 0.7,
+     "incident_place": 1.0,
+     "injuries": 1.0,
+     "new_value": 0.25,
+     "other_party": 1.0,
+     "policy_number": 0.3333333333333333,
+     "product": 0.7333333333333333,
+     "question_topic": 0.3333333333333333
+    },
+    "pairs": 156
+   },
+   "contradictions": {
+    "precision": 0.07894736842105263,
+    "recall": 0.75,
+    "f1": 0.14285714285714285,
+    "support": 4
+   },
+   "preferences": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "support": 21
+   },
+   "seconds_per_call": 17.799738151199925
   }
  },
  "selective": {
-  "condition": "reference",
+  "condition": "asr",
   "target_error_on_dev": 0.02,
-  "chosen_threshold": 0.0,
+  "chosen_threshold": 1.01,
   "dev_curve": [
    {
     "threshold": 0.0,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.05,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.1,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.15,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.2,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.25,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.3,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.35,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.4,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.45,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.5,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.55,
-    "dev_automation": 0.78,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.6,
-    "dev_automation": 0.7733333333333333,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.65,
-    "dev_automation": 0.7733333333333333,
-    "dev_error": 0.0
+    "dev_automation": 0.52,
+    "dev_error": 0.10256410256410256
    },
    {
     "threshold": 0.7,
-    "dev_automation": 0.7733333333333333,
-    "dev_error": 0.0
+    "dev_automation": 0.5133333333333333,
+    "dev_error": 0.09090909090909091
    },
    {
     "threshold": 0.75,
-    "dev_automation": 0.76,
-    "dev_error": 0.0
+    "dev_automation": 0.48,
+    "dev_error": 0.08333333333333333
    },
    {
     "threshold": 0.8,
-    "dev_automation": 0.7133333333333334,
-    "dev_error": 0.0
+    "dev_automation": 0.4266666666666667,
+    "dev_error": 0.078125
    },
    {
     "threshold": 0.85,
-    "dev_automation": 0.68,
-    "dev_error": 0.0
+    "dev_automation": 0.4,
+    "dev_error": 0.08333333333333333
    },
    {
     "threshold": 0.9,
-    "dev_automation": 0.6133333333333333,
-    "dev_error": 0.0
+    "dev_automation": 0.31333333333333335,
+    "dev_error": 0.10638297872340426
    },
    {
     "threshold": 0.95,
-    "dev_automation": 0.32666666666666666,
-    "dev_error": 0.0
+    "dev_automation": 0.12,
+    "dev_error": 0.16666666666666666
    },
    {
     "threshold": 1.0,
@@ -209,28 +666,36 @@
   ],
   "test_automate_all": {
    "automation_rate": 1.0,
-   "error_rate_on_automated": 0.0,
-   "errors_automated": 0,
+   "error_rate_on_automated": 0.41333333333333333,
+   "errors_automated": 62,
    "automated": 150,
    "n": 150,
-   "overall_case_error_if_all_automated": 0.0
+   "overall_case_error_if_all_automated": 0.41333333333333333
   },
   "test_rules_only": {
-   "automation_rate": 0.8466666666666667,
-   "error_rate_on_automated": 0.0,
-   "errors_automated": 0,
-   "automated": 127,
+   "automation_rate": 0.5666666666666667,
+   "error_rate_on_automated": 0.11764705882352941,
+   "errors_automated": 10,
+   "automated": 85,
    "n": 150,
-   "overall_case_error_if_all_automated": 0.0
+   "overall_case_error_if_all_automated": 0.41333333333333333
   },
   "test_selective": {
-   "automation_rate": 0.8466666666666667,
-   "error_rate_on_automated": 0.0,
+   "automation_rate": 0.0,
+   "error_rate_on_automated": null,
    "errors_automated": 0,
-   "automated": 127,
+   "automated": 0,
    "n": 150,
-   "overall_case_error_if_all_automated": 0.0
+   "overall_case_error_if_all_automated": 0.41333333333333333
   }
  },
- "llm_usage": null
+ "llm_usage": {
+  "calls": 362,
+  "prompt_tokens": 159702,
+  "completion_tokens": 41127,
+  "seconds": 3409.917791387983,
+  "failures": 0,
+  "repairs": 2,
+  "llm_subset_n": 60
+ }
 }

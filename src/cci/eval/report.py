@@ -99,9 +99,18 @@ def build_report(results: Path) -> Path:
                     f"**Diarization ({r['condition']})**: DER {d['der_mean']:.3f} (missed {d['missed_mean']:.3f}, false alarm "
                     f"{d['false_alarm_mean']:.3f}, confusion {d['confusion_mean']:.3f}); operator/client role accuracy "
                     f"{d['role_accuracy_mean']:.3f}; calls with role accuracy < 0.9: {d['calls_with_role_accuracy_below_0.9']}"
-                    f" of {d['calls']}.",
+                    f" of {d['calls']} (script-cue heuristic over diarization clusters).",
                     "",
                 ]
+        roles = load("roles_test")
+        if roles:
+            md += [
+                f"**Role assignment fix** (ADR-B8, selected on dev, applied to all {roles['calls']} test calls): a TF-IDF text "
+                f"model per segment raises role accuracy from {roles['heuristic']['mean']:.3f} "
+                f"({roles['heuristic']['below_0.9']} calls < 0.9) to {roles['role_model']['mean']:.4f} "
+                f"({roles['role_model']['below_0.9']} calls < 0.9). All `asr` NLP rows below use these roles.",
+                "",
+            ]
     nlp = load("nlp")
     if nlp:
         md += [
@@ -166,9 +175,18 @@ def build_report(results: Path) -> Path:
         md += [
             "## 4. Automation vs selective prediction with human review",
             "",
-            f"Condition `{s['condition']}`. Intent-probability threshold chosen on **dev** for <= "
-            f"{s['target_error_on_dev']:.0%} case error: **{s['chosen_threshold']}**. A case is wrong if intent, queue or any "
-            "required field is wrong.",
+            f"Condition `{s['condition']}`. A case is wrong if intent, queue or any required field is wrong. "
+            + (
+                f"Intent-probability threshold chosen on **dev** for <= {s['target_error_on_dev']:.0%} case error: "
+                f"**{s['chosen_threshold']}**."
+                if s["chosen_threshold"] <= 1.0
+                else (
+                    f"**No threshold reached <= {s['target_error_on_dev']:.0%} case error on dev** (lowest dev error "
+                    f"{min(p['dev_error'] for p in s['dev_curve'] if p['dev_automation'] > 0):.3f}), so the selective "
+                    "policy sends every case to review. Intent confidence cannot catch these errors: they come from "
+                    "fields, not from intent (intent accuracy on full ASR transcripts is 1.0)."
+                )
+            ),
             "",
         ]
         rows = []
@@ -222,7 +240,7 @@ def build_report(results: Path) -> Path:
     md += [
         "## Limits",
         "",
-        "* Synthetic, TTS-rendered speech; operator and client voices differ in gender (easier diarization).",
+        "* Synthetic, TTS-rendered speech; both voices are male CC0 Piper voices; no overlapping speech.",
         "* Test phrasings are family-disjoint from training, but written by the same author as the generator.",
         "* An early debugging run of the rule extractor looked at a sample of the original test seed; the reported",
         "  test split is generated with a fresh seed after all rules were frozen.",

@@ -94,11 +94,17 @@ class LLMClient:
         self.usage.failures += 1
         raise LLMError(f"LLM request failed after retries: {last}")
 
-    def chat(self, messages: list[dict], schema: dict | None = None, max_tokens: int | None = None) -> str:
+    def chat(
+        self,
+        messages: list[dict],
+        schema: dict | None = None,
+        max_tokens: int | None = None,
+        temperature: float | None = None,
+    ) -> str:
         payload = {
             "model": self.cfg.model,
             "messages": messages,
-            "temperature": self.cfg.temperature,
+            "temperature": self.cfg.temperature if temperature is None else temperature,
             "max_tokens": max_tokens or self.cfg.max_tokens,
         }
         if schema is not None:
@@ -110,9 +116,11 @@ class LLMClient:
         data = self._post("/chat/completions", payload)
         return data["choices"][0]["message"].get("content") or ""
 
-    def structured(self, messages: list[dict], model: type[T], max_tokens: int | None = None) -> T:
+    def structured(
+        self, messages: list[dict], model: type[T], max_tokens: int | None = None, temperature: float | None = None
+    ) -> T:
         schema = model.model_json_schema()
-        text = self.chat(messages, schema=schema, max_tokens=max_tokens)
+        text = self.chat(messages, schema=schema, max_tokens=max_tokens, temperature=temperature)
         try:
             return model.model_validate_json(_strip(text))
         except ValidationError as e:

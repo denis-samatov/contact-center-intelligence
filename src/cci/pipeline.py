@@ -58,10 +58,12 @@ class CallProcessor:
         policy: ReviewPolicy | None = None,
         extractor: str = "rules",
         llm=None,
+        role_model=None,
     ):
         self.transcriber = transcriber
         self.diarizer = diarizer
         self.intent_model = intent_model
+        self.role_model = role_model
         self.policy = policy or ReviewPolicy()
         self.extractor = extractor
         self.llm = llm
@@ -83,11 +85,17 @@ class CallProcessor:
                 speakers = ["spk0"] * len(asr.segments)
         else:
             speakers = ["spk0"] * len(asr.segments)
-        roles = assign_roles(asr.segments, speakers)
+        if self.role_model is not None:  # trained text role model (selected on dev, ADR-B8)
+            from cci.speech.diarization import assign_roles_model
+
+            seg_roles = assign_roles_model([s.text for s in asr.segments], speakers, self.role_model)
+        else:  # script-cue heuristic over diarization clusters
+            by_cluster = assign_roles(asr.segments, speakers)
+            seg_roles = [by_cluster.get(spk, "client") for spk in speakers]
         timings["diarization"] = time.perf_counter() - t0
         segs = [
-            TranscriptSegment(s.start, s.end, spk, roles.get(spk, "client"), s.text, normalize_numbers(s.text))
-            for s, spk in zip(asr.segments, speakers, strict=True)
+            TranscriptSegment(s.start, s.end, spk, role, s.text, normalize_numbers(s.text))
+            for s, spk, role in zip(asr.segments, speakers, seg_roles, strict=True)
             if s.text
         ]
         text = " ".join(s.text for s in segs)

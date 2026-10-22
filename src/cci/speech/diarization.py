@@ -121,3 +121,60 @@ def der(reference: list[Turn], hypothesis: list[Turn], step: float = 0.01) -> di
 
 
 __all__ = ["Diarizer", "Turn", "assign_roles", "assign_speakers", "der", "SR"]
+
+
+class RoleModel:
+    """Text classifier P(operator | utterance), trained on train-split reference turns.
+
+    Operators follow scripts (greetings, questions for fields, closings), so utterance text is
+    a strong role signal that complements voice clustering. Cluster roles are decided by the
+    mean probability over the cluster's segments; when diarization collapses to a single
+    cluster, each segment is labelled on its own.
+    """
+
+    def __init__(self):
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.pipeline import FeatureUnion, make_pipeline
+
+        self.model = make_pipeline(
+            FeatureUnion(
+                [
+                    ("w", TfidfVectorizer(ngram_range=(1, 2), sublinear_tf=True)),
+                    ("c", TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 4), sublinear_tf=True)),
+                ]
+            ),
+            LogisticRegression(C=4, max_iter=2000),
+        )
+
+    def fit(self, texts: list[str], roles: list[str]) -> RoleModel:
+        self.model.fit([t.lower() for t in texts], [r == "operator" for r in roles])
+        return self
+
+    def p_operator(self, texts: list[str]) -> list[float]:
+        if not texts:
+            return []
+        classes = list(self.model.classes_)
+        return [float(p[classes.index(True)]) for p in self.model.predict_proba([t.lower() for t in texts])]
+
+
+def assign_roles_model(texts: list[str], speakers: list[str], model: RoleModel, mode: str = "text") -> list[str]:
+    """Roles from the text model.
+
+    ``mode``: ``text`` - each segment on its own (selected on dev: role accuracy 0.997 vs 0.953
+    for ``cluster``, where segments inherit their diarization cluster's majority role);
+    ``hybrid`` - cluster role unless the text model is confident (|p - 0.5| > 0.4).
+    """
+    probs = model.p_operator(texts)
+    by_text = ["operator" if p >= 0.5 else "client" for p in probs]
+    clusters = sorted(set(speakers))
+    if mode == "text" or len(clusters) < 2:
+        return by_text
+    mean = {
+        c: sum(p for p, s in zip(probs, speakers, strict=True) if s == c) / max(1, speakers.count(c)) for c in clusters
+    }
+    op = max(mean, key=mean.get)
+    by_cluster = ["operator" if s == op else "client" for s in speakers]
+    if mode == "cluster":
+        return by_cluster
+    return [t if abs(p - 0.5) > 0.4 else c for p, t, c in zip(probs, by_text, by_cluster, strict=True)]
