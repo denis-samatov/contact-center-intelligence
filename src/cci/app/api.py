@@ -7,16 +7,18 @@ anonymous access only when explicitly enabled *and* the client is on loopback.
 
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
 import hmac
 import json
+import tempfile
 import time
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from cci.app.db import CallRow, CaseRow, JobRow, ReviewRow, SegmentRow, db_ready, init_db, make_engine
 from cci.app.ratelimit import EXEMPT_PREFIXES, TokenBucketLimiter, client_id, retry_after
@@ -126,7 +128,7 @@ def create_app(settings: Settings | None = None, answerer=None, limiter: TokenBu
         file: UploadFile = File(...),
         provenance: str = Form(...),
         license_note: str = Form(""),
-        call_date: str | None = Form(None),
+        call_date: dt.date | None = Form(None),
         who: str = Depends(auth),
     ):
         if provenance not in ALLOWED_PROVENANCE:
@@ -143,9 +145,13 @@ def create_app(settings: Settings | None = None, answerer=None, limiter: TokenBu
         digest = hashlib.sha256(data).hexdigest()
         path = s.storage_dir / f"{digest}{suffix}"
         if not path.exists():
-            tmp = path.with_suffix(".part")
-            tmp.write_bytes(data)
-            tmp.replace(path)
+            with tempfile.NamedTemporaryFile(dir=s.storage_dir, suffix=".part", delete=False) as tmp:
+                temporary = Path(tmp.name)
+                tmp.write(data)
+            try:
+                temporary.replace(path)
+            finally:
+                temporary.unlink(missing_ok=True)
         with Session() as session:
             call = CallRow(
                 filename=Path(file.filename).name,
@@ -153,7 +159,7 @@ def create_app(settings: Settings | None = None, answerer=None, limiter: TokenBu
                 storage_path=str(path),
                 provenance=provenance,
                 license_note=license_note,
-                call_date=call_date,
+                call_date=call_date.isoformat() if call_date else None,
             )
             session.add(call)
             session.flush()
@@ -166,7 +172,7 @@ def create_app(settings: Settings | None = None, answerer=None, limiter: TokenBu
         status: str | None = None,
         decision: str | None = None,
         queue: str | None = None,
-        limit: int = 50,
+        limit: int = Query(50, ge=1),
         _: str = Depends(auth),
     ):
         with Session() as session:
@@ -258,7 +264,9 @@ def create_app(settings: Settings | None = None, answerer=None, limiter: TokenBu
 
     @app.patch("/v1/calls/{call_id}/case")
     def correct_case(call_id: str, body: CaseCorrection, _: str = Depends(auth)):
-        from cci.domain.schema import FIELDS, Intent, fields_for, missing_required, route
+        from cci.domain.schema import FIELDS, Contradiction, Intent
+        from cci.nlp.case import ReviewPolicy, build_case, render_protocol
+        from cci.nlp.rules import Extraction
 
         with Session() as session:
             case = session.get(CaseRow, call_id, with_for_update=engine.dialect.name == "postgresql")
@@ -267,24 +275,57 @@ def create_app(settings: Settings | None = None, answerer=None, limiter: TokenBu
             if case.version != body.expected_version:
                 raise HTTPException(409, f"case changed (version {case.version}); reload before editing")
             before = {"intent": case.intent, "fields": dict(case.fields), "decision": case.decision}
-            if body.intent is not None:
-                try:
-                    case.intent = Intent(body.intent).value
-                except ValueError as e:
-                    raise HTTPException(422, f"unknown intent {body.intent!r}") from e
-            if body.fields is not None:
-                unknown = set(body.fields) - set(FIELDS)
-                if unknown:
-                    raise HTTPException(422, f"unknown fields {sorted(unknown)}")
-                allowed = set(fields_for(Intent(case.intent)))
-                case.fields = {k: v for k, v in {**case.fields, **body.fields}.items() if k in allowed and v}
-            it = Intent(case.intent)
-            case.missing = missing_required(it, case.fields)
-            case.queue = route(it, case.fields).value
+            try:
+                intent = Intent(body.intent if body.intent is not None else case.intent)
+            except ValueError as e:
+                raise HTTPException(422, f"unknown intent {body.intent!r}") from e
+            fields = {**case.fields, **(body.fields or {})}
+            unknown = set(body.fields or {}) - set(FIELDS)
+            if unknown:
+                raise HTTPException(422, f"unknown fields {sorted(unknown)}")
+            corrected = set(body.fields or {})
+            derived = build_case(
+                intent.value,
+                case.intent_prob if intent.value == case.intent else 0.0,
+                Extraction(
+                    fields={k: v for k, v in fields.items() if v},
+                    preferences=case.preferences,
+                    contradictions=[
+                        Contradiction.model_validate(c) for c in case.contradictions if c["field"] not in corrected
+                    ],
+                ),
+                ReviewPolicy(min_intent_prob=s.min_intent_prob),
+            )
             if body.decision is not None:
-                case.decision = body.decision
-            case.version += 1
-            case.reviewed = True
+                derived.decision = body.decision
+            elif body.intent is None and body.fields is None:
+                derived.decision = case.decision
+            derived.protocol = render_protocol(derived)
+            values = {
+                name: getattr(derived, name)
+                for name in (
+                    "intent",
+                    "intent_prob",
+                    "fields",
+                    "missing",
+                    "contradictions",
+                    "queue",
+                    "next_actions",
+                    "decision",
+                    "review_reasons",
+                    "protocol",
+                    "reply_draft",
+                    "reply_sources",
+                )
+            }
+            result = session.execute(
+                update(CaseRow)
+                .where(CaseRow.call_id == call_id, CaseRow.version == body.expected_version)
+                .values(**values, version=body.expected_version + 1, reviewed=True)
+            )
+            if result.rowcount != 1:
+                raise HTTPException(409, "case changed; reload before editing")
+            session.refresh(case)
             after = {"intent": case.intent, "fields": dict(case.fields), "decision": case.decision}
             session.add(
                 ReviewRow(call_id=call_id, reviewer=body.reviewer, before=before, after=after, comment=body.comment)

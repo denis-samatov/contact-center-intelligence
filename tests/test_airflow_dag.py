@@ -11,7 +11,10 @@ from pathlib import Path
 
 import pytest
 
-pytestmark = pytest.mark.skipif(importlib.util.find_spec("airflow") is None, reason="apache-airflow not installed")
+pytestmark = pytest.mark.skipif(
+    importlib.util.find_spec("airflow") is None or importlib.util.find_spec("airflow.__main__") is None,
+    reason="apache-airflow CLI not installed (the repository airflow/ directory is not the package)",
+)
 ROOT = Path(__file__).resolve().parents[1]
 
 SCRIPT = r"""

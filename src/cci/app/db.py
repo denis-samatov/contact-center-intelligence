@@ -12,7 +12,7 @@ from __future__ import annotations
 import datetime as dt
 import uuid
 
-from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text, create_engine, select, text
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text, create_engine, select, text, update
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 
@@ -120,23 +120,55 @@ def claim_job(session: Session, worker_id: str, visibility_timeout_s: int = 900)
     """Atomically claim one runnable job (or a job whose worker died)."""
     now = _now()
     stale = now - dt.timedelta(seconds=visibility_timeout_s)
-    stmt = (
-        select(JobRow)
-        .where(
-            ((JobRow.status == "queued") & (JobRow.run_after <= now))
-            | ((JobRow.status == "running") & (JobRow.locked_at < stale))
-        )
-        .order_by(JobRow.id)
-        .limit(1)
+    runnable = ((JobRow.status == "queued") & (JobRow.run_after <= now)) | (
+        (JobRow.status == "running") & (JobRow.locked_at < stale)
     )
+    # A process death bypasses Worker.run_once's exception handler. Retire exhausted
+    # expired claims atomically before considering another attempt.
+    exhausted = list(
+        session.scalars(
+            update(JobRow)
+            .where(runnable, JobRow.attempts >= JobRow.max_attempts)
+            .values(
+                status="failed",
+                locked_by=None,
+                locked_at=None,
+                last_error="maximum attempts exhausted after worker lease expiry",
+            )
+            .returning(JobRow.call_id)
+            .execution_options(synchronize_session=False)
+        )
+    )
+    if exhausted:
+        session.execute(
+            update(CallRow)
+            .where(CallRow.id.in_(exhausted))
+            .values(status="failed", error="maximum attempts exhausted after worker lease expiry")
+        )
+        session.commit()
+    stmt = select(JobRow).where(runnable, JobRow.attempts < JobRow.max_attempts).order_by(JobRow.id).limit(1)
     if session.bind.dialect.name == "postgresql":
         stmt = stmt.with_for_update(skip_locked=True)
     job = session.scalars(stmt).first()
     if job is None:
         return None
-    job.status, job.locked_by, job.locked_at = "running", worker_id, now
-    job.attempts += 1
+    # PostgreSQL holds the SELECT row lock; SQLite also needs compare-and-set so
+    # two readers cannot claim the same observed generation.
+    result = session.execute(
+        update(JobRow)
+        .where(
+            JobRow.id == job.id,
+            JobRow.status == job.status,
+            JobRow.attempts == job.attempts,
+            JobRow.locked_at == job.locked_at,
+        )
+        .values(status="running", locked_by=worker_id, locked_at=now, attempts=job.attempts + 1)
+        .execution_options(synchronize_session=False)
+    )
     session.commit()
+    if result.rowcount != 1:
+        return None
+    session.refresh(job)
     return job
 
 
