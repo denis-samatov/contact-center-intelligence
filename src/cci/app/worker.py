@@ -13,9 +13,10 @@ import logging
 import os
 import signal
 import socket
+import threading
 import time
 
-from sqlalchemy import delete
+from sqlalchemy import delete, update
 
 from cci.app.db import CallRow, CaseRow, JobRow, SegmentRow, claim_job, init_db, make_engine
 from cci.app.settings import Settings
@@ -25,6 +26,10 @@ log = logging.getLogger("cci.worker")
 
 def _log(event: str, **kw) -> None:
     log.info(json.dumps({"event": event, **kw}, ensure_ascii=False, default=str))
+
+
+class LostJob(RuntimeError):
+    """A different claim generation owns this job."""
 
 
 class Worker:
@@ -42,33 +47,76 @@ class Worker:
             job = claim_job(session, self.worker_id, self.s.job_visibility_timeout_s)
             if job is None:
                 return False
-            job_id, call_id = job.id, job.call_id
-        _log("job_claimed", job=job_id, call=call_id, attempt=job.attempts)
+        job_id, call_id, attempt = job.id, job.call_id, job.attempts
+        _log("job_claimed", job=job_id, call=call_id, attempt=attempt)
         t0 = time.perf_counter()
+        stop = threading.Event()
+
+        def heartbeat():
+            while not stop.wait(max(0.05, self.s.job_visibility_timeout_s / 3)):
+                try:
+                    with self.Session() as session:
+                        self._owned_job(session, job_id, attempt, renew=True)
+                        session.commit()
+                except Exception:
+                    # The CPU operation cannot be killed safely; its final commit is
+                    # still fenced and will be rejected after a takeover/expiry.
+                    return
+
+        thread = threading.Thread(target=heartbeat, name="cci-lease-heartbeat", daemon=True)
+        thread.start()
         try:
-            self._process(call_id)
-        except Exception as e:  # noqa: BLE001 - every failure becomes a retry or a failed job
-            with self.Session() as session:
-                job = session.get(JobRow, job_id)
-                call = session.get(CallRow, call_id)
-                job.last_error = f"{type(e).__name__}: {e}"[:2000]
-                if job.attempts >= job.max_attempts:
-                    job.status, call.status, call.error = "failed", "failed", job.last_error
-                else:
-                    job.status = "queued"
-                    job.run_after = dt.datetime.now(dt.UTC) + dt.timedelta(seconds=2**job.attempts)
-                    call.status = "queued"
-                job.locked_by = job.locked_at = None
-                session.commit()
-            _log("job_failed", job=job_id, call=call_id, error=str(e)[:300])
-            return True
-        _log("job_done", job=job_id, call=call_id, seconds=round(time.perf_counter() - t0, 3))
+            self._process(call_id, job_id, attempt)
+        except LostJob:
+            _log("job_ownership_lost", job=job_id, call=call_id, attempt=attempt)
+        except Exception as e:  # noqa: BLE001 - every owned failure becomes retry/failed
+            try:
+                with self.Session() as session:
+                    job = self._owned_job(session, job_id, attempt)
+                    call = session.get(CallRow, call_id)
+                    job.last_error = f"{type(e).__name__}: {e}"[:2000]
+                    if job.attempts >= job.max_attempts:
+                        job.status, call.status, call.error = "failed", "failed", job.last_error
+                    else:
+                        job.status = "queued"
+                        job.run_after = dt.datetime.now(dt.UTC) + dt.timedelta(seconds=2**job.attempts)
+                        call.status = "queued"
+                    job.locked_by = job.locked_at = None
+                    session.commit()
+            except LostJob:
+                _log("job_ownership_lost", job=job_id, call=call_id, attempt=attempt)
+            else:
+                _log("job_failed", job=job_id, call=call_id, error=str(e)[:300])
+        else:
+            _log("job_done", job=job_id, call=call_id, seconds=round(time.perf_counter() - t0, 3))
+        finally:
+            stop.set()
+            thread.join(timeout=1)
         return True
 
-    def _process(self, call_id: str) -> None:
+    def _owned_job(self, session, job_id: int, attempt: int, *, renew: bool = False):
+        now = dt.datetime.now(dt.UTC)
+        result = session.execute(
+            update(JobRow)
+            .where(
+                JobRow.id == job_id,
+                JobRow.status == "running",
+                JobRow.locked_by == self.worker_id,
+                JobRow.attempts == attempt,
+                JobRow.locked_at >= now - dt.timedelta(seconds=self.s.job_visibility_timeout_s),
+            )
+            .values(locked_at=now if renew else JobRow.locked_at)
+            .execution_options(synchronize_session=False)
+        )
+        if result.rowcount != 1:
+            raise LostJob("job lease lost")
+        return session.get(JobRow, job_id, populate_existing=True)
+
+    def _process(self, call_id: str, job_id: int, attempt: int) -> None:
         from cci.speech.asr import load_wav
 
         with self.Session() as session:
+            self._owned_job(session, job_id, attempt)
             call = session.get(CallRow, call_id)
             call.status = "processing"
             session.commit()
@@ -77,6 +125,14 @@ class Worker:
         result = self.processor.process(call_id, samples, dt.date.fromisoformat(call_date) if call_date else None)
         c = result.case
         with self.Session() as session:  # one transaction: segments + case + call + job
+            job = self._owned_job(session, job_id, attempt)
+            existing = session.get(CaseRow, call_id, with_for_update=self.engine.dialect.name == "postgresql")
+            if existing is not None and existing.reviewed:
+                job.status = "done"
+                job.locked_by = job.locked_at = None
+                session.get(CallRow, call_id).status = "done"
+                session.commit()
+                return  # Human-reviewed fields and associated transcript are authoritative.
             session.execute(delete(SegmentRow).where(SegmentRow.call_id == call_id))
             for i, s in enumerate(result.segments):
                 session.add(
@@ -94,7 +150,7 @@ class Worker:
             session.merge(
                 CaseRow(
                     call_id=call_id,
-                    version=1,
+                    version=existing.version + 1 if existing is not None else 1,
                     intent=c.intent,
                     intent_prob=c.intent_prob,
                     fields=c.fields,
@@ -117,8 +173,8 @@ class Worker:
             call.duration_s, call.asr_backend, call.timings = result.duration_s, result.asr_backend, result.timings_s
             call.operator_talk_s = sum(s.end - s.start for s in result.segments if s.role == "operator")
             call.client_talk_s = sum(s.end - s.start for s in result.segments if s.role == "client")
-            for job in session.query(JobRow).filter(JobRow.call_id == call_id, JobRow.status == "running"):
-                job.status = "done"
+            job.status = "done"
+            job.locked_by = job.locked_at = None
             session.commit()
 
     def run_forever(self) -> None:

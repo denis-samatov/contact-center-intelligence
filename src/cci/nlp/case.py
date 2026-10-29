@@ -132,9 +132,14 @@ def render_protocol(case: Case) -> str:
     if prefs:
         lines.append("Пожелания клиента: " + ", ".join(prefs))
     lines.append(f"Очередь: {case.queue}. Следующие шаги: {', '.join(case.next_actions)}.")
+    decision_text = {
+        "auto": "автоматически",
+        "review": "на проверку оператору",
+        "approved": "одобрено оператором",
+        "rejected": "отклонено оператором",
+    }[case.decision]
     lines.append(
-        f"Решение системы: {'автоматически' if case.decision == 'auto' else 'на проверку оператору'}"
-        + (f" ({', '.join(case.review_reasons)})" if case.review_reasons else "")
+        f"Решение системы: {decision_text}" + (f" ({', '.join(case.review_reasons)})" if case.review_reasons else "")
     )
     return "\n".join(lines)
 
