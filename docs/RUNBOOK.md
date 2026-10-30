@@ -98,3 +98,8 @@ Historical `results/` remain reports of their original synthetic experiments.
 Queue retry exhaustion also covers hard process death: once an expired claim has used
 `max_attempts`, the next poll atomically marks the job and call failed and clears the
 lease. It never grants attempt `max_attempts + 1`. The stale CPU worker remains fenced.
+
+Uploads authenticate before parsing. The whole multipart body (including chunked
+requests) is limited to `max_upload_mb` plus 64 KiB overhead and a 30-second body
+deadline. The per-file byte limit remains in force. Anonymous local mode additionally
+requires a loopback Host and, when present, an exactly matching browser Origin.
