@@ -7,13 +7,16 @@ anonymous access only when explicitly enabled *and* the client is on loopback.
 
 from __future__ import annotations
 
+import asyncio
 import datetime as dt
 import hashlib
 import hmac
+import ipaddress
 import json
 import tempfile
 import time
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
@@ -26,6 +29,45 @@ from cci.app.settings import ALLOWED_PROVENANCE, Settings
 
 UI = Path(__file__).with_name("ui.html")
 AUDIO_TYPES = {".wav", ".flac", ".ogg"}
+
+
+class CallUploadLimit:
+    """Bound the entire multipart transport before its parser can spool files."""
+
+    def __init__(self, app, max_bytes: int):
+        self.app, self.max_bytes = app, max_bytes
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http" or scope["method"] != "POST" or scope["path"] != "/v1/calls":
+            return await self.app(scope, receive, send)
+        chunks, size = [], 0
+        try:
+            async with asyncio.timeout(30):
+                while True:
+                    message = await receive()
+                    if message["type"] == "http.disconnect":
+                        return
+                    body = message.get("body", b"")
+                    size += len(body)
+                    if size > self.max_bytes:
+                        return await JSONResponse({"detail": "upload body too large"}, status_code=413)(
+                            scope, receive, send
+                        )
+                    chunks.append(body)
+                    if not message.get("more_body", False):
+                        break
+        except TimeoutError:
+            return await JSONResponse({"detail": "upload body timed out"}, status_code=408)(scope, receive, send)
+        delivered = False
+
+        async def buffered_receive():
+            nonlocal delivered
+            if delivered:
+                return await receive()
+            delivered = True
+            return {"type": "http.request", "body": b"".join(chunks), "more_body": False}
+
+        return await self.app(scope, buffered_receive, send)
 
 
 class Metrics:
@@ -71,6 +113,7 @@ def create_app(settings: Settings | None = None, answerer=None, limiter: TokenBu
     s.storage_dir.mkdir(parents=True, exist_ok=True)
     metrics = Metrics()
     app = FastAPI(title="Contact Center Intelligence", version="0.1.0")
+    app.add_middleware(CallUploadLimit, max_bytes=s.max_upload_mb * 2**20 + 64 * 1024)
 
     @app.middleware("http")
     async def _observe(request: Request, call_next):
@@ -90,6 +133,11 @@ def create_app(settings: Settings | None = None, answerer=None, limiter: TokenBu
             return JSONResponse(
                 {"detail": "rate limit exceeded"}, status_code=429, headers={"Retry-After": retry_after(wait)}
             )
+        if request.method == "POST" and request.url.path == "/v1/calls":
+            try:
+                auth(request)  # authenticate before multipart parsing or body buffering
+            except HTTPException as exc:
+                return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
         return await call_next(request)
 
     def auth(request: Request) -> str:
@@ -98,6 +146,19 @@ def create_app(settings: Settings | None = None, answerer=None, limiter: TokenBu
             return "api-key"
         host = request.client.host if request.client else ""
         if s.allow_anonymous_local and host in ("127.0.0.1", "::1", "testclient"):
+            host_header = request.headers.get("host", "")
+            try:
+                parsed = urlsplit("http://" + host_header)
+                _ = parsed.port
+                hostname = parsed.hostname or ""
+                local = hostname == "localhost" or ipaddress.ip_address(hostname).is_loopback
+                if parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment:
+                    local = False
+            except ValueError:
+                local = False
+            origin = request.headers.get("origin")
+            if not local or (origin is not None and origin != f"{request.url.scheme}://{host_header}"):
+                raise HTTPException(403, "anonymous access requires a local Host and same browser Origin")
             return "anonymous-local"
         raise HTTPException(401, "missing or invalid API key")
 

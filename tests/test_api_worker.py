@@ -364,3 +364,27 @@ def test_hard_crash_reclaims_stop_at_max_attempts(env):
             assert job.locked_by is None and job.locked_at is None
             call = session.get(CallRow, call_id)
             assert call.status == "failed" and "attempt" in call.error
+
+
+def test_transport_limit_rejects_oversized_multipart_before_parser(env):
+    settings, _ = env
+    settings.max_upload_mb = 1
+    client = TestClient(create_app(settings))
+    response = client.post(
+        "/v1/calls",
+        headers={**H, "Content-Type": "multipart/form-data; boundary=x"},
+        content=iter([b"x" * (1024 * 1024), b"x" * (128 * 1024)]),
+    )
+    assert response.status_code == 413
+    Session = init_db(make_engine(settings.database_url))
+    with Session() as session:
+        assert session.query(JobRow).count() == 0
+
+
+def test_anonymous_local_upload_rejects_foreign_browser_origin(env):
+    settings, _ = env
+    settings.api_key = None
+    settings.allow_anonymous_local = True
+    client = TestClient(create_app(settings), base_url="http://localhost")
+    assert upload(client, headers={"Origin": "https://untrusted.example"}).status_code == 403
+    assert upload(client, headers={"Origin": "http://localhost"}).status_code == 202
